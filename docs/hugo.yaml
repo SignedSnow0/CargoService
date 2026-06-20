@@ -1,4 +1,4 @@
-baseURL: https://signedsnow0.it/iss
+baseURL: https://iss.signedsnow0.it/
 locale: it-IT
 title: Cargo Service
 theme: ["PaperMod"]
@@ -22,10 +22,10 @@ params:
     subtitle: "Cargo Service"
     buttons:
       - name: "Sprint 0"
-        url: "/iss/sprint0"
+        url: "/sprint0"
 
       - name: "Sprint 1"
-        url: "/iss/sprint1"
+        url: "/sprint1"
 
   authors:
     - name: "Marchini Claudio"
