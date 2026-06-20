@@ -35,5 +35,9 @@ params:
     - name: "Tomasi Cesare"
       email: "cesare.tomasi@studio.unibo.it"
       image: "images/cesare.jpeg"
-    
+
   github: "https://github.com/SignedSnow0/IngegneriaDeiSistemiSoftwareM"
+
+caches:
+  images:
+    dir: :cacheDir/images
