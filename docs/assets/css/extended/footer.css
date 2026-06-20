@@ -1,0 +1,80 @@
+.custom-footer {
+    padding: 50px 0;
+    margin-top: 60px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.footer-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 40px;
+    justify-content: center;
+}
+
+.footer-project-link {
+    display: block;
+    width: 100%;
+    text-align: center;
+    clear: both;
+}
+
+.author-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.author-propic {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--border);
+    background: var(--code-bg);
+}
+
+.author-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.author-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--primary);
+}
+
+.author-email {
+    font-size: 0.82rem;
+    color: var(--secondary);
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.author-email:hover {
+    color: var(--tertiary);
+    text-decoration: underline;
+}
+
+/* Responsive tweak for mobile screens */
+@media (max-width: 640px) {
+    .footer-container {
+        flex-direction: column;
+        gap: 24px;
+        align-items: flex-start;
+    }
+}
+
+.github-icon {
+    width: 18px;
+    height: 18px;
+    transition: transform 0.2s ease;
+}
+
+.github-btn:hover .github-icon {
+    transform: rotate(-8deg) scale(1.1);
+}

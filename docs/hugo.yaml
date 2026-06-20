@@ -1,0 +1,39 @@
+baseURL: https://signedsnow0.it/iss
+locale: it-IT
+title: Cargo Service
+theme: ["PaperMod"]
+
+menu:
+  main:
+    - name: "Sprint 0"
+      url: "/sprint0"
+    - name: "Sprint 1"
+      url: "/sprint1"
+
+params:
+  author:
+    - "Marchini Claudio"
+    - "Tomasi Cesare"
+  hideFooter: true
+
+  profileMode:
+    enabled: true
+    title: "Progetto Ingegneria dei Sistemi Software"
+    subtitle: "Cargo Service"
+    buttons:
+      - name: "Sprint 0"
+        url: "/iss/sprint0"
+
+      - name: "Sprint 1"
+        url: "/iss/sprint1"
+
+  authors:
+    - name: "Marchini Claudio"
+      email: "claudio.marchini@studio.unibo.it"
+      image: "images/claudio.jpg"
+
+    - name: "Tomasi Cesare"
+      email: "cesare.tomasi@studio.unibo.it"
+      image: "images/cesare.jpeg"
+    
+  github: "https://github.com/SignedSnow0/IngegneriaDeiSistemiSoftwareM"
