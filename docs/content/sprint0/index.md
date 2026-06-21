@@ -5,116 +5,131 @@ title: "Sprint 0"
 
 ## Introduction
 
-A Maritime Cargo shipping company (fron now on, simply company) intends to automate the operations of load of freight in the ship's cargo hold (or simply hold). To this end, the company plans to employ a Differential Drive Robot (from now, called cargorobot) for the loading of goods (named products) in the ship's hold. The products to be loaded must be placed in a container of predefined dimensions and registered, by specifying its weight, within a database, by using a proper service (productservice). After the registration, the productservice returns a unique product identifier as a natural number PID, PID>0. The hold is a rectangular, flat area with an Input/Output port (IOPort). The area provides 4 slots for the product containers.
+A _Maritime Cargo shipping company_ (from now on, simply **company**) intends to automate the operations of load of **containers** in the ship’s cargo hold (or simply hold). To this end, the company plans to employ a _Differential Drive Robot_ (from now, called **cargorobot**).
+The _hold_ is a rectangular, flat are a with an Input/Output port (**IOPort**). The area provides `4 slots` to store the containers and a slot named **slot5**.
+
+![Requirements image](image-requrements.png)
+
+In the picture above:
+
+- The **slots1-4** depict the hold areas reserved to store one _container_ each,
+- The **slots5** depicts an area, where the _cargorobot_ must temporarily store a container, before to place it in one of
+  the _slots1-4_. During temporary storage, a ‘marker’ device labels the container with an identification barcode and
+  signals when this marking activity is completed.
+- The **IOPort** is a device with a **pushbutton** and a **display**. The _pushbutton_ is pressed by the customer in order
+  to to send a request to load a container on the cargo. The _display_ is used to show the answer to the request and
+  to show the current state of the _hold_.
+- The **sensor** associated to the _IOPort_ is a device (a _sonar_) used to detect the presence of a container, when it
+  measures a distance `D`, such that `D < DFREE/2`, during a reasonable time (e.g. `3` secs).
 
 ## Requirements
 
-The company asks us to build a software systems (named **cargoservice**) that:
+The company asks us to build service named **cargoservice** that should work as follows.
+The _cargoservice_ is able to receive a **request to load** a container sent by some customer by using the _pushbutton_ of the _IOPort_.
 
-1. Is able to receive the request to load on the cargo a **product** container already registered in the productservice. The request is rejected when:
-   - the **product-weight** is evaluated too high, since the ship can carry a **maximum load** of `MaxLoad > 0 kg`.
-   - the hold is already full, i.e. the **4 slots** are alrready **occupied**.
+- It sends the answer `retrylater`, if the **IOPort** is currently occupied by a container or if the system is _Out of service_
+- It rejects the request when the hold is already full, i.e. the `slots1-4` are already occupied.
+- Otherwise, it considers the system as _engaged_, detects a free slot and returns as answer the name of such a reserved slot. While engaged, the system must blink a Led.
 
-   If the request is accepted, the cargoservice associates a slot to the product **PID** and returns the name of the reserved slot. Afterwards, it waits that the product container is delivered to the **ioport**. In the meantime, other requests are not elaborated.
+When the _request to load_ is accepted, the customer must move the container in the _sensor_ area within prefixed amount of time (e.g. 30 secs), otherwise the systems becomes **disengaged**. Then, the _cargoservice_ uses the _cargorobot_ to move the container from the _IOPort_ to the _slot5_ (for marking the container) and then to the reserved slot.
+The service must also show on the _display_ on the _IOPort_:
 
-2. Is able todetect (by means of the **sonar** sensor) the presence of the product container at the ioport.
-3. Is able to ensure that the product container is placed by the cargorobot within its reserved slot. At the end of the work:
-   - the cargorobot should returns to its `HOME` location.
-   - the cargoservice can process another load-request.
-4. Is able to show the current state of the **hold**, by means of a dynamically updated **web-gui**.
-5. Interrupts any activity and turns on a led if the sonar sensor measures a distance `D > DFREE` for at least 3 secs (perhaps a sonar failure). The service continues its activities as soon as the sonar measures a distance `D <= DFREE`.
+- the current state of the _hold_
+- the message **‘Service working’**, when it is all is going well
+- the message **‘Out of service’** if the _sonar sensor_ measures a distance `D > DFREE` for at least `3` secs (perhaps a failure of the _sonar_).
 
 ## Requirement Analysis
 
-To satisfy requirement #1, it is necessary to give a formal definition of product:
+The system states the presence of a *hold* which contains *slots* and an *IOPort*. Theese objects must me modeled inside the system and will likely be used by the robot to plan its movement across the hold.
+We begin by defining a *slot*, it must contain:
+* An **id** to distinguish it (1-5)
+* A **flag** to specify it is currently occupied
 
 ```java
-public interface IProduct {
-    String getName();
-    double getWeight();
-    int getProductIdentifier();
-    boolean isRegistered();
+public interface ISlot {
+    public int getID();
+    public boolean isOccupied();
 }
 ```
 
----
-
-The system requires to define a request to load as a message containing useful information for the decision process, in particular the message should contain:
-
-- the product weight
-- the hold capacity
-- the PID
-
-since the reqirements specify a response to the request, it is modeled as a qak request:
-
-```qak
-Request loadRequest : loadRequest(Weight, Capacity, PID)
-Reply loadAccepted : loadAccepted(SlotName) for loadRequest
-Reply loadRejected : loadRejected(Reason) for loadRequest
-```
-
-From the customer we know that the sonar is a Raspberry Pi pico w placed in front of the IOPort, it measures continuously the distance and is used to detect two possible states:
-
-- D < DFREE / 2 for at least 3 seconds: a container is detected at the IOPort
-- D > DFREE for at least 3 seconds: possible sonar error, it resumes activity when it detects a distance of less than DFREE
-
----
-
-To satisfy requirement #3, the robot should be able to move between the home, ioport and the reserved slots. In order to do that a representation of the hold has to be defined, in particular the representation should be a matrix of squares 1 robot unit wide, where 1 robot unit is a square the lenght of the robot. The hold should contain all slots and the home and IOPort.
-
+The slots are contained in the hold, which also has the *IOPort* location
 ```java
 public interface IPosition {
-    int getRow();
-    int getColumn();
-}
-
-public interface ISlot {
-    String getName();
-    boolean isOccupied();
+    public int getX();
+    public int getY();
 }
 
 public interface IHold {
-    IPosition getHome();
-    IPosition getIoPort();
-    List getSlots();
+    public IPosition getIOPortPosition();
+    public List<Pair<IPosition, ISlot>> getSlots();
 }
 ```
+Since the *hold* is rectangular in shape, the reprentation of the map can be a matrix.
+Each cell is the size of the robot, the position reprents the coordinates of the cell in this matrix. This system can take advantage of the robot's movement system which has a **step** function that moves the robot forward by one unit.
+
+The special *slot5* is distinguished by its ID which is always `5`.
+The requirements do not specify the starting position of the *cargorobot*, and this will likely be an issue when the robot will have to plan a path to reach a slot/port.
+
+`Does the system specify an initial position for the cargorobot (HOME) or does it have a way to know where it is located at every moment?`
+
+The current requirements do not specify any data about the *container*, the only information needed is to know if it currently occupied a slot, which can be obtained by the method `isOccupied()`, so the current system avoids modeling it.
 
 ---
 
-The web gui will have to display various information (to be discussed with the customer), but in general to display such information the system will need a service to poll the data for the gui.
+The reuirements present a message called **request to load** which is used to start the load process.
+Since we want to model the service as a collection of microservices we will the `qak` language. The message expects an aswer so it will be modeled as a *request*
+```qak
+Request loadRequest : loadRequest(X)
+
+Reply retryLater : retryLater(RetryMessage) for loadRequest
+Reply rejected : rejected(RejectedMessage) for loadRequest
+Reply accepted : accepted(SlotID) for loadRequest
+```
+---
+
+The robot is given by the company, we can use it by the given interface which can be found [here at chapter 27](https://anatali.github.io/issLab2026/_static/docs/Protobook.pdf). We need to develop a system that can plan a path from the *IOPort* and the slots and vice versa. This system will be an actor with the following behaviours:
+1. After a *load request* is acceptes it must wait for up to `30` second for a containter to be placed in the *IOPort*
+2. It must move the *robot* from the *IOPort* to the *slot5*
+3. It must wait for the robot to mark the container and then it must move it to the empty *slot*
 
 ```qak
-QActor guiservice context cargoservice {
-    State s0 initial {
+ExternalQActor robot context robotservice
+
+QActor robotplanner context cargoservice {
+    State receiveRequest {
+        // reject the request (retryLater or slots full) or go to engaged
+    }
+
+    State engaged {
+        // wait for the container or go back to receiveRequest
+    }
+
+    State moveRobot {
 
     }
-    Transition t0
-        whenMsg getX -> handleGetX
+
+    State markContainer {
+
+    }
 }
 ```
-
 ---
-
-To interrupt the system, the sonar will emit a particular message, since no response is needed and the receivers are not known it is modeled as an event:
-
+The *display* and *sonar* are a series of hardware devices that are installed on a `Raspberry Pi Pico W`, an interface will be needed and to keep it consistent with the rest of the system it will also be a microservice developed in qak.
 ```qak
 Event sonarDistance : sonarDistance(D)
 ```
 
----
-
-The robot will likely need an actor to work as an adapter, much in the same way as the sonar:
-
 ```qak
-QActor robot context cargoservice {
-    State processLoad {
+QActor displayService context cargoservice {
+    State getHoldState {
     }
 
-    State goHome {
+    State getStatusMessage {
     }
 }
 ```
+The raspberry will likely need a comunication protocol, various solutions exist, for example, TCP, WebSocket, MQTT, etc. 
+We still need to discuss with the company if it has any prefrences or we are free to choose the best for our use case.
 
 ## Problem Analysis
 
