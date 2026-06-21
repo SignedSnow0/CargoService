@@ -36,7 +36,7 @@ params:
       email: "cesare.tomasi@studio.unibo.it"
       image: "images/cesare.jpeg"
 
-  github: "https://github.com/SignedSnow0/IngegneriaDeiSistemiSoftwareM"
+  github: "https://github.com/SignedSnow0/CargoService"
 
 caches:
   images:
