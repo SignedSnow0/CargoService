@@ -41,3 +41,8 @@ params:
 caches:
   images:
     dir: :cacheDir/images
+
+module:
+  mounts:
+    - source: "../sprint0/docs"
+      target: "content/sprint0"
