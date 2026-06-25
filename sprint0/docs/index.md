@@ -82,8 +82,9 @@ The current requirements do not specify any data about the _container_, the only
 ---
 
 Since the system will be deployed on multiple nodes that are eterogeneous (Raspberry Pico W, a physical robot and a master node) a distributed model based on services is required.
-Our software house has already developed a DSL for this specific purpose: **qak**.
-Furthermore the language can use multiple comunication protocols (that will likely be used by the system, like TCP, WebSocket, MQTT) all in a transparent way for the programmer. This makes _qak_ the best choice for this project wherever a service is needed.
+Using a general purpose progamming language (such as Java or C#) for this specific use case would force us to writes lots of lines of code and also would be very technology dependent on the chosen communication protocol.
+For this reasons, our software house has already developed a DSL for this specific purpose: **[qak](https://anatali.github.io/issLab2026/_static/docs/Protobook.pdf#chapter.17)**.
+The language is very concise and also supports multiple communication protocols (that will likely be used by the system, like TCP, WebSocket, MQTT) all in a transparent way for the programmer. This makes _qak_ the best choice for this project wherever a service is needed.
 
 ---
 
@@ -97,11 +98,12 @@ Reply retryLater : retryLater(RetryMessage) for loadRequest
 Reply rejected : rejected(RejectedMessage) for loadRequest
 Reply accepted : accepted(SlotID) for loadRequest
 ```
-The requirements specify that an LED must blink while the system is *engaged*, the company told us that theL LED is the one attached to the Raspberry. 
+The requirements specify that an LED (hardware component which is capable of emitting light) must blink while the system is *engaged*.
+The company told us that the chosen LED is going to be the one attached to the Raspberry Pico board. 
 
 ---
 
-The system requires us to model the **cargorobot**, fortunately the software house has previously built an interface to use a DDR robot using _qak_, either **[VirtualRobot26](https://anatali.github.io/issLab2026/_static/docs/Protobook.pdf)** or **[RobotService26](https://anatali.github.io/issLab2026/_static/docs/Protobook.pdf)**.
+The system requires us to model the **cargorobot**, fortunately the software house has previously built an interface to use a DDR robot using _qak_, either **[VirtualRobot26](https://anatali.github.io/issLab2026/_static/docs/Protobook.pdf#chapter.25)** or **[RobotService26](https://anatali.github.io/issLab2026/_static/docs/Protobook.pdf#chapter.27)**.
 
 On top of the existing code another actor is needed to manage the states of the system:
 
