@@ -75,7 +75,7 @@ We choose to make each cell the size of the robot, the position reprents the coo
 
 The special _slot5_ is distinguished by its ID which is always `5`.
 
-The *cargorobot*'s initial position is defined by the **HOME**.
+The _cargorobot_'s initial position is defined by the **HOME**.
 
 The current requirements do not specify any data about the _container_, the only information needed is to know if it currently occupied a slot, which can be obtained by the method `isOccupied()`, so the current system avoids modeling it.
 
@@ -98,8 +98,9 @@ Reply retryLater : retryLater(RetryMessage) for loadRequest
 Reply rejected : rejected(RejectedMessage) for loadRequest
 Reply accepted : accepted(SlotID) for loadRequest
 ```
-The requirements specify that an LED (hardware component which is capable of emitting light) must blink while the system is *engaged*.
-The company told us that the chosen LED is going to be the one attached to the Raspberry Pico board. 
+
+The requirements specify that an LED (hardware component which is capable of emitting light) must blink while the system is _engaged_.
+The company told us that the chosen LED is going to be the one attached to the Raspberry Pico board.
 
 ---
 
@@ -132,12 +133,14 @@ QActor robotplanner context cargoservice {
 ```
 
 ---
+
 The **IOPort** is the component that is used by the client to interact with the system.
 The company told us that the **pushbutton** for the _IOPort_ and the **display** must be a web page that will be used by various users to control the system and watch its status.
 The page will then need:
 
 - A button that will act as the _pushbutton_ to send the _request to load_
 - At least some string that show the response and the state of the hold
+
 ```html
 <!DOCTYPE html>
 <head>
@@ -150,13 +153,18 @@ The page will then need:
 </body>
 </html>
 ```
+
 ---
+
 ## Problem Analysis
 
 ## Test Plans
-Since at the current status the system doesn't have much code, the only component that can be tested is the *hold*, in particular:
-1. If the hold is empty a *request to load* should give an *accepted* response.
-2. If the hold is full a *request to load* should give a *rejected* response.
+
+Since at the current status the system doesn't have much code, the only component that can be tested is the _hold_, in particular:
+
+1. If the hold is empty a _request to load_ should give an _accepted_ response.
+2. If the hold is full a _request to load_ should give a _rejected_ response.
+
 ```java
 public class HoldTest {
     public void TestEmptyHold() {
