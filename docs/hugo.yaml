@@ -46,3 +46,5 @@ module:
   mounts:
     - source: "../sprint0/docs"
       target: "content/sprint0"
+    - source: "../sprint1/docs"
+      target: "content/sprint1"
