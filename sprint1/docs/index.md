@@ -126,11 +126,13 @@ while True:
     except Exception as e:
         print("Exception: ", type(e).__name__, e)
 ```
-* We have assumed that the Board will be connected through Wifi
-* The configurations parameters (Wifi SSID, Password, MQTT broker, topi, ect..) will be set in a *.env* file in order to enhance reusability.
-* The *msg* will be formatted as specified by the documentation of [unibo.basicomm23-1.0](https://anatali.github.io/issLab2026/_static/docs/Protobook.pdf#chapter.9), a library developed by our software house, already used by *qak*
 
-Then, a *qak* wrapper will be implemented to transform the raw distance data into the messages needed by our system
+- We have assumed that the Board will be connected through Wifi
+- The configurations parameters (Wifi SSID, Password, MQTT broker, topic, ect..) will be set in a _.env_ file in order to enhance reusability.
+- The _msg_ will be formatted as specified by the documentation of [unibo.basicomm23-1.0](https://anatali.github.io/issLab2026/_static/docs/Protobook.pdf#chapter.9), a library developed by our software house, already used by _qak_
+
+Then, a _qak_ wrapper will be implemented to transform the raw distance data into the messages needed by our system
+
 ```qak
 Event serviceWorking : serviceWorking(X)
 Event outOfService : outOfService(X)
@@ -143,27 +145,59 @@ QActor sonarwrapper context ctxcargoservice {
     }
 }
 ```
-We choose to make the display messages events to permit a future expansion through extensibility. The containerInIOPort, instead is a dispatch because the only receiver should be the *cargoservice* actor.
+
+We choose to make the display messages events to permit a future expansion through extensibility. The containerInIOPort, instead is a dispatch because the only receiver should be the _cargoservice_ actor.
 
 ---
-Since the **IOPort** has to mantain the current status of the system at any moment the web page will need a **WebSocket** connection to ensure it receives updates, also receive the state of the *hold* our implementation in the [requirement analysis](http://iss.signedsnow0.it/sprint0/#requirement-analysis) will also need a listener that will forward any change via WebSocket to all connected clients.
+
+Since the **IOPort** has to mantain the current status of the system at any moment the web page will need a **WebSocket** connection to ensure it receives updates, also receive the state of the _hold_ our implementation in the [requirement analysis](http://iss.signedsnow0.it/sprint0/#requirement-analysis) will also need a listener that will forward any change via WebSocket to all connected clients.
+
 ```js
-const socket = new WebSocket('ws://localhost:8080');
+const socket = new WebSocket("ws://localhost:8080");
 
-const requestSpan = document.getElementById('request-result');
-const statusSpan = document.getElementById('current-status');
+const requestSpan = document.getElementById("request-result");
+const statusSpan = document.getElementById("current-status");
 
-socket.addEventListener('open', (event) => {
-    //Request initial state
+socket.addEventListener("open", (event) => {
+  //Request initial state
 });
 
-socket.addEventListener('message', (event) => {
-    // Dispatch by message type and update right span
+socket.addEventListener("message", (event) => {
+  // Dispatch by message type and update right span
 });
 ```
-The qak observer will be similar to [demoObserver26](https://github.com/anatali/issLab2026/blob/main/qakdemo26/src/demoobserver.qaktt)
 
 ---
+
+The system also needs to wait for a **marker** device to signal the end of its activity. In the previous analysis we did not specify if this component is given by the client or we have to build it by ourselves. For now we will implement a mock QActor
+
+```qak
+Request markContainer : markContainer(ID)
+Reply markDone : markDone(msg) for markContainer
+
+QActor marker : context ctxcargoservice {
+    [# val MarkingTime = 5000 #]
+
+    State s0 initial {
+
+    }
+    Transition t0
+        whenMessage markContainer -> handleMarkRequest
+
+    State handleMarkRequest {
+        //Wait for marking and send reply
+    }
+    Goto s0
+}
+```
+
+This system keeps the interface, represented by the messages, separated from the business logic (the QActor). In this way either decision the client will make in the future can be implemented just by adding the correct adapter that will be:
+
+- An interface with the service given by the client
+- Another actor made by our software house
+
+---
+
 ## Test Plans
 
 ## Project
