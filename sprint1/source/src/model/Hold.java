@@ -21,9 +21,8 @@ public class Hold implements IHold {
 		slotList.add(new Pair<IPosition, ISlot>(new Position(WIDTH, DELTA), new Slot(0)));
 		slotList.add(new Pair<IPosition, ISlot>(new Position(WIDTH - DELTA - 1, DELTA), new Slot(1)));
 		slotList.add(new Pair<IPosition, ISlot>(new Position(DELTA, LENGHT - DELTA - 1), new Slot(2)));
-		slotList.add(new Pair<IPosition, ISlot>(new Position(WIDTH - DELTA - 1, DELTA), new Slot(1)));
-		slotList.add(new Pair<IPosition, ISlot>(new Position(WIDTH - DELTA - 1, DELTA), new Slot(1)));
-		slotList.add(new Pair<IPosition, ISlot>(new Position(WIDTH - DELTA, LENGHT / 2), new Slot(1)));
+		slotList.add(new Pair<IPosition, ISlot>(new Position(WIDTH - DELTA - 1, DELTA), new Slot(3)));
+		slotList.add(new Pair<IPosition, ISlot>(new Position(WIDTH - DELTA, LENGHT / 2), new Slot(4)));
 	}
 
 	@Override
