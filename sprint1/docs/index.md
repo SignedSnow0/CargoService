@@ -42,12 +42,19 @@ The service must also show on the _display_ on the _IOPort_:
 
 ## Problem Analysis
 
-The system need an actor that manages the whole flow of the application, we will call this actor **cargoservice** and will work as the main unit, which will dispath jobs to other helper services. The normal flow is:
+The system need an actor that manages the whole flow of the application, we will
+call this actor **cargoservice** and will work as the main unit, which will dispath jobs to
+other helper services. The normal flow defined in the sprint 0 is:
 
 1. It listens for a **request to load** received by the _pushbutton_
-2. It checks the state of the **IOPort**, and decides which answer to send back, as defined in the [sprint 0](http://iss.signedsnow0.it/sprint0/#requirement-analysis)
-3. If a slot is free, it waits for the container to be placed in the _sensor area_ and then delegates the _cargorobot_ service to move the container to **slot-5**
-4. It then moves the container from **slot-5** to the reserved slot again with the use of the **cargorobot**
+2. It checks the state of the **IOPort**, and decides which answer to send back, as
+   defined in the [sprint 0](http://iss.signedsnow0.it/sprint0/#requirement-analysis)
+3. If a slot is free, it waits for the container to be placed in the _sensor area_ and then
+   delegates the _cargorobot_ service to move the container to **slot-5**
+4. It then moves the container from **slot-5** to the reserved slot again with the use of
+   the **cargorobot**
+   Here we will solidify the definition of the behaviour by expanding and formalizing it
+   using _qak_:
 
 ```qak
 QActor cargoservice context ctxcargoservice {
@@ -89,10 +96,13 @@ QActor cargoservice context ctxcargoservice {
 
 ---
 
-The **sonar** is built with a _Raspberry Pi Pico W_ and a [HC-SR04](https://www.handsontec.com/dataspecs/HC-SR04-Ultrasonic.pdf#[{%22num%22%3A21%2C%22gen%22%3A0}%2C{%22name%22%3A%22XYZ%22}%2C34%2C799%2C0]) sonar, we need to build a wrapper service which is used to send the data to the rest of the system. Before defining the wrapper, we need to specify a few things:
+The **sonar** is a [HC-SR04](https://www.handsontec.com/dataspecs/HC-SR04-Ultrasonic.pdf#%5B%7B%22num%22%3A21%2C%22gen%22%3A0%7D%2C%7B%22name%22%3A%22XYZ%22%7D%2C34%2C799%2C0%5D) and it is attached to a Raspberry Pi Pico W. The device will
+need to comunicate with the rest of the system but in order to define how we will
+comunicate we need to consider a few limations of the hardware:
 
-- The raspberry is too lightweight to support a full JVM needed to run _qak_ directly, so we have to use either cpp or micropython as the language
-- Since _qak_ is not a possibility the comunication must be implemented with a protocol, preferably one that _qak_ suports out of the box, we have chosen to use **MQTT**
+- The raspberry is too lightweight to support a full JVM needed to run qak directly, so we have to use either cpp or micropython as the language
+- Since qak is not a possibility the comunication must be implemented with a
+  protocol, preferably one that qak suports out of the box
 
 ```python
 def connectWifi():
@@ -127,11 +137,20 @@ while True:
         print("Exception: ", type(e).__name__, e)
 ```
 
-- We have assumed that the Board will be connected through Wifi
-- The configurations parameters (Wifi SSID, Password, MQTT broker, topic, ect..) will be set in a _.env_ file in order to enhance reusability.
-- The _msg_ will be formatted as specified by the documentation of [unibo.basicomm23-1.0](https://anatali.github.io/issLab2026/_static/docs/Protobook.pdf#chapter.9), a library developed by our software house, already used by _qak_
+We have assumed that the Board will be connected through Wifi
 
-Then, a _qak_ wrapper will be implemented to transform the raw distance data into the messages needed by our system
+- The configurations parameters (Wifi SSID, Password, MQTT broker, topic, ect..) will
+  be set in a _.env_ file in order to enhance reusability.
+- The _msg_ will be formatted as specified by the documentation of
+  [unibo.basicomm23-1.0](https://anatali.github.io/issLab2026/_static/docs/Protobook.pdf#chapter.9), a library developed by our software house, already used by _qak_
+  Once we have a way to receive distance information from the raspberry we have two
+  main options going forward:
+- Forward the raw distance to the rest of the system, it the will be the responsibility
+  of each component to interpret the information and evaluate the correct state
+  (sonar working / out of service)
+- Add an intermediate component that takes the raw distance, processes it, and
+  emits only the relevant messages (sonar working / out of service) to the rest of
+  the system
 
 ```qak
 Event serviceWorking : serviceWorking(X)
@@ -150,7 +169,10 @@ We choose to make the display messages events to permit a future expansion throu
 
 ---
 
-Since the **IOPort** has to mantain the current status of the system at any moment the web page will need a **WebSocket** connection to ensure it receives updates, also receive the state of the _hold_ our implementation in the [requirement analysis](http://iss.signedsnow0.it/sprint0/#requirement-analysis) will also need a listener that will forward any change via WebSocket to all connected clients.
+Since the **IOPort** has to mantain the current status of the system at any moment the
+web page will need a **WebSocket** connection to ensure it receives updates, also
+receive the state of the **hold** our implementation in the [requirement analysis](https://iss.signedsnow0.it/sprint0/) will also
+need a listener that will forward any change via WebSocket to all connected clients.
 
 ```js
 const socket = new WebSocket("ws://localhost:8080");
@@ -169,7 +191,9 @@ socket.addEventListener("message", (event) => {
 
 ---
 
-The system also needs to wait for a **marker** device to signal the end of its activity. In the previous analysis we did not specify if this component is given by the client or we have to build it by ourselves. For now we will implement a mock QActor
+The system also needs to wait for a **marker** device to signal the end of its activity. In
+the previous analysis we did not specify if this component is given by the client or
+we have to build it by ourselves. For now we will implement a mock QActor
 
 ```qak
 Request markContainer : markContainer(ID)
@@ -191,10 +215,10 @@ QActor marker : context ctxcargoservice {
 }
 ```
 
-This system keeps the interface, represented by the messages, separated from the business logic (the QActor). In this way either decision the client will make in the future can be implemented just by adding the correct adapter that will be:
-
-- An interface with the service given by the client
-- Another actor made by our software house
+This design mantains a clear separation between the core logic (QActor) and the rest
+of the system, this enables the project to quickly adapt to wathever the client will
+need (either a custom marker or one built by us) by just adding a QActor that sends/
+receives the specified messages.
 
 ---
 
