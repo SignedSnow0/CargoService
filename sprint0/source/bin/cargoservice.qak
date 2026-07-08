@@ -1,0 +1,9 @@
+System cargoservice
+
+Context ctxcargoservice ip [ host="localhost" port=5000 ]
+
+QActor cargoservice context ctxcargoservice {
+	State s0 initial {
+		
+	}
+}

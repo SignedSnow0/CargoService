@@ -9,6 +9,7 @@ This sprint builds on top of the work of [sprint 0](https://iss.signedsnow0.it/s
 * The main *cargoservice* actor
 * The *sonar* subsystem
 * The *IOPort* and *pushbutton* interfaces
+* Concrete implementations of the following interfaces: *ISlot*, *IHold*, *IPosition* 
 
 ## Requirements
 
