@@ -5,7 +5,9 @@ title: "Sprint 0"
 
 ## Introduction
 
-The original specification for the project is found [here](https://anatali.github.io/issLab2026/_static/docs/Protobook.pdf#chapter.31), for convinience a copy is reported below.
+The original specification for the project is found [here](https://anatali.github.io/issLab2026/_static/docs/Protobook.pdf#chapter.31), for convenience a copy is reported below.
+
+The goal of this sprint is to convert natural language requirements into a machine-readable representation.
 
 A _Maritime Cargo shipping company_ (from now on, simply **company**) intends to automate the operations of load of **containers** in the ship’s cargo hold (or simply hold). To this end, the company plans to employ a _Differential Drive Robot_ (from now, called **cargorobot**).
 The _hold_ is a rectangular, flat are a with an Input/Output port (**IOPort**). The area provides `4 slots` to store the containers and a slot named **slot5**.
