@@ -44,7 +44,7 @@ caches:
 
 module:
   mounts:
-    - source: "../sprint0/docs"
+    - source: "../sprint0/userDocs"
       target: "content/sprint0"
-    - source: "../sprint1/docs"
+    - source: "../sprint1/userDocs"
       target: "content/sprint1"

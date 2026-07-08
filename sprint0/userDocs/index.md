@@ -5,6 +5,8 @@ title: "Sprint 0"
 
 ## Introduction
 
+The original specification for the project is found [here](https://anatali.github.io/issLab2026/_static/docs/Protobook.pdf#chapter.31), for comodity a copy is reported below.
+
 A _Maritime Cargo shipping company_ (from now on, simply **company**) intends to automate the operations of load of **containers** in the ship’s cargo hold (or simply hold). To this end, the company plans to employ a _Differential Drive Robot_ (from now, called **cargorobot**).
 The _hold_ is a rectangular, flat are a with an Input/Output port (**IOPort**). The area provides `4 slots` to store the containers and a slot named **slot5**.
 
@@ -71,11 +73,11 @@ public interface IHold {
 ```
 
 Since the _hold_ is rectangular in shape, the reprentation of the map can be a matrix.
-We choose to make each cell the size of the robot, the position reprents the coordinates of the cell in this matrix. This system can take advantage of the robot's movement system which has a **step** function (talked about below) that moves the robot forward by one unit.
+We choose to make each cell the size of the robot, the position reprents the coordinates of the cell in this matrix. This system can take advantage of the robot's movement system.
 
 The special _slot5_ is distinguished by its ID which is always `5`.
 
-The _cargorobot_'s initial position is defined by the **HOME**.
+The _cargorobot_'s initial position is defined by the **HOME**, it is formalized as a special position in the hold obtained by `getHomePosition()`
 
 The current requirements do not specify any data about the _container_, the only information needed is to know if it currently occupied a slot, which can be obtained by the method `isOccupied()`, so the current system avoids modeling it.
 
@@ -88,7 +90,7 @@ The language is very concise and also supports multiple communication protocols 
 
 ---
 
-The requirements present a message called **request to load** which is used to start the load process.
+The requirements present a message called **request to load** from the _pushbutton_ to the _cargoservice_, which is used to start the load process.
 Since we want to model the service as a collection of microservices we will the `qak` language. The message expects an aswer so it will be modeled as a _request_
 
 ```qak
@@ -104,33 +106,25 @@ The company told us that the chosen LED is going to be the one attached to the R
 
 ---
 
-The system requires us to model the **cargorobot**, fortunately the software house has previously built an interface to use a DDR robot using _qak_, either **[VirtualRobot26](https://anatali.github.io/issLab2026/_static/docs/Protobook.pdf#chapter.25)** or **[RobotService26](https://anatali.github.io/issLab2026/_static/docs/Protobook.pdf#chapter.27)**.
+The system requires us to model the **cargorobot**, fortunately the software house has previously built a series of components that are used to command a [DDR robot](https://en.wikipedia.org/wiki/Differential_wheeled_robot), namely:
 
-On top of the existing code another actor is needed to manage the states of the system:
+- [VirtualRobot26](https://anatali.github.io/issLab2026/_static/docs/Protobook.pdf#chapter.25)
+- [RobotObj26](https://anatali.github.io/issLab2026/_static/docs/Protobook.pdf#chapter.26)
+- [RobotService26](https://anatali.github.io/issLab2026/_static/docs/Protobook.pdf#chapter.27)
+- [RobotSmart26](https://anatali.github.io/issLab2026/_static/docs/Protobook.pdf#chapter.30)
 
-1. After a _load request_ is acceptes it must wait for up to `30` second for a containter to be placed in the _IOPort_
-2. It must move the _robot_ from the _IOPort_ to the _slot5_
-3. It must wait for the robot to mark the container and then it must move it to the empty _slot_
+From the requisites whe can deduce that the robot will:
+1. Go from _home_ to the _IOPort_
+2. Go from _IOPort_ to _slot5_
+3. Wait *3 seconds* for the _marker_ to finish (the client specified the wait time is fixed)
+4. Go from _slot5_ to the reserved slot
+5. Go back _home_
 
-```qak
-QActor robotplanner context cargoservice {
-    State receiveRequest {
-        // reject the request (retryLater or slots full) or go to engaged
-    }
-
-    State engaged {
-        // wait for the container or go back to receiveRequest
-    }
-
-    State moveRobot {
-
-    }
-
-    State markContainer {
-
-    }
-}
-```
+Fortunately the implementation **RobotSmart26** has a lot of features that the system need already built in, such as:
+* A pathfinding algorithm
+* A map based o an grid
+* A movement system based on *steps* of fixed sizes (the cells of the grid)
+* It is interactable via _qak_ messages
 
 ---
 
