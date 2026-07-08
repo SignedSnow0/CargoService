@@ -5,7 +5,7 @@ title: "Sprint 0"
 
 ## Introduction
 
-The original specification for the project is found [here](https://anatali.github.io/issLab2026/_static/docs/Protobook.pdf#chapter.31), for comodity a copy is reported below.
+The original specification for the project is found [here](https://anatali.github.io/issLab2026/_static/docs/Protobook.pdf#chapter.31), for convinience a copy is reported below.
 
 A _Maritime Cargo shipping company_ (from now on, simply **company**) intends to automate the operations of load of **containers** in the ship’s cargo hold (or simply hold). To this end, the company plans to employ a _Differential Drive Robot_ (from now, called **cargorobot**).
 The _hold_ is a rectangular, flat are a with an Input/Output port (**IOPort**). The area provides `4 slots` to store the containers and a slot named **slot5**.
@@ -121,10 +121,10 @@ From the requisites whe can deduce that the robot will:
 5. Go back _home_
 
 Fortunately the implementation **RobotSmart26** has a lot of features that the system need already built in, such as:
-* A pathfinding algorithm
-* A map based o an grid
+* A pathfinding algorithm (not present in the others)
+* A map based on a grid
 * A movement system based on *steps* of fixed sizes (the cells of the grid)
-* It is interactable via _qak_ messages
+* It works as a service (not true for **RobotObj26**, which is a pojo) and it is interactable via _qak_ messages
 
 ---
 
