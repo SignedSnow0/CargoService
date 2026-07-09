@@ -40,18 +40,28 @@ QActor cargoservice context ctxcargoservice {
     	whenRequest loadRequest -> handleRequest
 
 	State handleRequest {
+		[#var canEngage = true#]
 		if [# IOPortOccupied #] {
 			println("$name | Reply retry later") color blue
 			replyTo loadRequest with retryLater : retryLater(IOPortOccupied)
+			[#canEngage = false#]
 		}
 		if [# allSlotsOccupied() #] {
 			println("$name | Reply rejected") color blue
 			replyTo loadRequest with rejected : rejected(AllSlotsFull)
+			[#canEngage = false#]
 		}
 		
-		[#IsEngaged = true#]
-		
-		[#hold.getSlots().first({ !it.second.isOccupied() }).second.setOccupied(true)#]
+		if [#canEngage#] {
+			[#IsEngaged = true
+			
+			val freeSlot = hold.getSlots().first({ !it.second.isOccupied() }).second;
+			
+		  	freeSlot.setOccupied(true);
+		  	val SlotId = freeSlot.getID();#]
+		  	
+			replyTo loadRequest with accepted : accepted($SlotId)
+		}
 	}	
 	Goto engaged if [#IsEngaged#] else disengaged
 	
@@ -78,7 +88,5 @@ QActor cargoservice context ctxcargoservice {
 QActor sonar context ctxcargoservice {
     State s0 initial {
         // listen to the sonar messages and send the right events/dispatch
-
-    }
-    
+    }  
 }

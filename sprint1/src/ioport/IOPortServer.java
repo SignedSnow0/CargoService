@@ -57,7 +57,9 @@ public class IOPortServer {
             	}
             	
             	System.out.println("Received message: " + message.toString());
+            	
             	var reply = cargoserviceConnection.request(message);
+            	ctx.send(reply.toJsonString());
             });
         });
 

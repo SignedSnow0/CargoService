@@ -41,7 +41,7 @@ class Cargoservice ( name: String, scope: CoroutineScope, isconfined: Boolean=fa
 				state("disengaged") { //this:State
 					action { //it:State
 						IsEngaged = false 
-						CommUtils.outblack("$name | Disengaged")
+						CommUtils.outgreen("$name | Disengaged")
 						//genTimer( actor, state )
 					}
 					//After Lenzi Aug2002
@@ -51,16 +51,26 @@ class Cargoservice ( name: String, scope: CoroutineScope, isconfined: Boolean=fa
 				}	 
 				state("handleRequest") { //this:State
 					action { //it:State
+						var canEngage = true 
 						if(  IOPortOccupied  
-						 ){CommUtils.outblack("$name | Reply retry later")
+						 ){CommUtils.outblue("$name | Reply retry later")
 						answer("loadRequest", "retryLater", "retryLater(IOPortOccupied)"   )  
+						canEngage = false 
 						}
 						if(  allSlotsOccupied()  
-						 ){CommUtils.outblack("$name | Reply rejected")
+						 ){CommUtils.outblue("$name | Reply rejected")
 						answer("loadRequest", "rejected", "rejected(AllSlotsFull)"   )  
+						canEngage = false 
 						}
-						IsEngaged = true 
-						hold.getSlots().first({ !it.second.isOccupied() }).second.setOccupied(true) 
+						if( canEngage 
+						 ){IsEngaged = true
+									
+									val freeSlot = hold.getSlots().first({ !it.second.isOccupied() }).second;
+									
+								  	freeSlot.setOccupied(true);
+								  	val SlotId = freeSlot.getID(); 
+						answer("loadRequest", "accepted", "accepted($SlotId)"   )  
+						}
 						//genTimer( actor, state )
 					}
 					//After Lenzi Aug2002
@@ -73,7 +83,7 @@ class Cargoservice ( name: String, scope: CoroutineScope, isconfined: Boolean=fa
 				}	 
 				state("engaged") { //this:State
 					action { //it:State
-						CommUtils.outblack("$name | Engaged")
+						CommUtils.outgreen("$name | Engaged")
 						//genTimer( actor, state )
 					}
 					//After Lenzi Aug2002
