@@ -27,7 +27,5 @@ with Diagram('cargoserviceArch', show=False, outformat='png', graph_attr=graphat
 ### see https://renenyffenegger.ch/notes/tools/Graphviz/attributes/label/HTML-like/index
      with Cluster('ctxcargoservice', graph_attr=nodeattr):
           cargoservice=Custom('cargoservice','./qakicons/symActorWithobjSmall.png')
-          marker=Custom('marker','./qakicons/symActorWithobjSmall.png')
           sonar=Custom('sonar','./qakicons/symActorWithobjSmall.png')
-     cargoservice >> Edge(color='magenta', style='solid', decorate='true', label='<markContainer<font color="darkgreen"> markDone</font> &nbsp; >',  fontcolor='magenta') >> marker
 diag

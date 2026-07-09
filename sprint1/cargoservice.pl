@@ -14,7 +14,5 @@ dispatch( iOPortDeposited, iOPortDeposited(X) ).
 context(ctxcargoservice, "localhost",  "TCP", "5000").
  qactor( cargoservice, ctxcargoservice, "it.unibo.cargoservice.Cargoservice").
  static(cargoservice).
-  qactor( marker, ctxcargoservice, "it.unibo.marker.Marker").
- static(marker).
   qactor( sonar, ctxcargoservice, "it.unibo.sonar.Sonar").
  static(sonar).

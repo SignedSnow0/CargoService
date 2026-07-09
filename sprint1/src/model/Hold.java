@@ -12,7 +12,7 @@ public class Hold implements IHold {
 	private IPosition ioPosition;
 	private IPosition homePosition;
 	
-	List<Pair<IPosition, ISlot>> slotList = new ArrayList<Pair<IPosition, ISlot>>();
+	private List<Pair<IPosition, ISlot>> slotList = new ArrayList<Pair<IPosition, ISlot>>();
 	
 	public Hold() {
 		ioPosition = new Position(0, WIDTH - 1);
@@ -27,16 +27,16 @@ public class Hold implements IHold {
 
 	@Override
 	public IPosition getIOPortPosition() {
-		return this.ioPosition;
+		return ioPosition;
 	}
 
 	@Override
 	public IPosition getHomePosition() {
-		return this.homePosition;
+		return homePosition;
 	}
 
 	@Override
 	public List<Pair<IPosition, ISlot>> getSlots() {
-		return this.getSlots();
+		return slotList;
 	}
 }

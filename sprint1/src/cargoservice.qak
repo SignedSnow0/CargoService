@@ -1,54 +1,63 @@
 System cargoservice
 
-//Container requests
+// Container requests
 Request loadRequest : loadRequest(X)
 Reply retryLater : retryLater(RetryMessage) for loadRequest
 Reply rejected : rejected(RejectedMessage) for loadRequest
 Reply accepted : accepted(SlotID) for loadRequest
 
-//Container marking
+// Container marking
 Request markContainer : markContainer(ID)
 Reply markDone : markDone(msg) for markContainer
 
-//Sonar events
+// Sonar events
 Event serviceWorking : serviceWorking(X)
 Event outOfService : outOfService(X)
 Dispatch iOPortDeposited : iOPortDeposited(X)
 
 Context ctxcargoservice ip [ host="localhost" port=5000 ]
+//Context ctxioport ip [ host="localhost" port=5001 ]
+
+//ExternalQActor ioport context ctxioport
 
 QActor cargoservice context ctxcargoservice {
-	[#val TimeoutMillis = 30000
+	[#val TimeoutMillis = 30000L
 	  var IOPortOccupied = false
-	  var NSlotsOccupied = 0
-	  var IsEngaged = false#]
-	
+	  var IsEngaged = false
+	  var hold = model.Hold()
+	  
+	  fun allSlotsOccupied(): Boolean {
+	      return hold.getSlots().all({ it.second.isOccupied() })
+	  }
+	  #]
+	 	
     State disengaged initial {
     	[#IsEngaged = false#]
     	
-    	
+    	println("$name | Disengaged") color green
     }
     Transition t0
     	whenRequest loadRequest -> handleRequest
 
 	State handleRequest {
 		if [# IOPortOccupied #] {
+			println("$name | Reply retry later") color blue
 			replyTo loadRequest with retryLater : retryLater(IOPortOccupied)
 		}
-		if [# NSlotsOccupied == 5 #] {
+		if [# allSlotsOccupied() #] {
+			println("$name | Reply rejected") color blue
 			replyTo loadRequest with rejected : rejected(AllSlotsFull)
 		}
 		
 		[#IsEngaged = true#]
 		
-		//Update state
-		
-		[#NSlotsOccupied++#]
+		[#hold.getSlots().first({ !it.second.isOccupied() }).second.setOccupied(true)#]
 	}	
 	Goto engaged if [#IsEngaged#] else disengaged
 	
 	State engaged {
-        //call blink led service
+        // call blink led service
+        println("$name | Engaged") color green
     }
     Transition t0
         whenTimeVar TimeoutMillis -> disengaged
@@ -56,38 +65,20 @@ QActor cargoservice context ctxcargoservice {
 
     State moveRobot {
         // call robot service from IOPort to slot 5
-     
-        request marker -m markContainer : markContainer(Id)
-    }
-    Transition t0
-    	whenReply markDone -> finishMoveRobot
-   
-   State finishMoveRobot {
-   		// call robot service from slot 5 to slot ReservedSlot
+        
+        delay 3000
+        
+    	// call robot service from slot 5 to slot ReservedSlot
 
-        //stop blink led service
-   }
+        // stop blink led service
+    }
    Goto disengaged
 }
-
-QActor marker context ctxcargoservice {
-    State s0 initial {
-
-    }
-    Transition t0
-        whenRequest markContainer -> handleMarkRequest
-
-    State handleMarkRequest {
-        delay 2500
-        
-    	replyTo markContainer with markDone : markDone(Success)
-    }
-    Goto s0
-}
-
 
 QActor sonar context ctxcargoservice {
     State s0 initial {
         // listen to the sonar messages and send the right events/dispatch
+
     }
+    
 }

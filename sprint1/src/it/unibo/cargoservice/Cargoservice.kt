@@ -29,14 +29,19 @@ class Cargoservice ( name: String, scope: CoroutineScope, isconfined: Boolean=fa
 	override fun getBody() : (ActorBasicFsm.() -> Unit){
 		//val interruptedStateTransitions = mutableListOf<Transition>()
 		//IF actor.withobj !== null val actor.withobj.name� = actor.withobj.method�ENDIF
-		val TimeoutMillis = 30000
+		val TimeoutMillis = 30000L
 			  var IOPortOccupied = false
-			  var NSlotsOccupied = 0
-			  var IsEngaged = false 
+			  var IsEngaged = false
+			  var hold = model.Hold()
+			  
+			  fun allSlotsOccupied(): Boolean {
+			      return hold.getSlots().all({ it.second.isOccupied() })
+			  }
 		return { //this:ActionBasciFsm
 				state("disengaged") { //this:State
 					action { //it:State
 						IsEngaged = false 
+						CommUtils.outblack("$name | Disengaged")
 						//genTimer( actor, state )
 					}
 					//After Lenzi Aug2002
@@ -47,13 +52,15 @@ class Cargoservice ( name: String, scope: CoroutineScope, isconfined: Boolean=fa
 				state("handleRequest") { //this:State
 					action { //it:State
 						if(  IOPortOccupied  
-						 ){answer("loadRequest", "retryLater", "retryLater(IOPortOccupied)"   )  
+						 ){CommUtils.outblack("$name | Reply retry later")
+						answer("loadRequest", "retryLater", "retryLater(IOPortOccupied)"   )  
 						}
-						if(  NSlotsOccupied == 5  
-						 ){answer("loadRequest", "rejected", "rejected(AllSlotsFull)"   )  
+						if(  allSlotsOccupied()  
+						 ){CommUtils.outblack("$name | Reply rejected")
+						answer("loadRequest", "rejected", "rejected(AllSlotsFull)"   )  
 						}
 						IsEngaged = true 
-						NSlotsOccupied++ 
+						hold.getSlots().first({ !it.second.isOccupied() }).second.setOccupied(true) 
 						//genTimer( actor, state )
 					}
 					//After Lenzi Aug2002
@@ -66,6 +73,7 @@ class Cargoservice ( name: String, scope: CoroutineScope, isconfined: Boolean=fa
 				}	 
 				state("engaged") { //this:State
 					action { //it:State
+						CommUtils.outblack("$name | Engaged")
 						//genTimer( actor, state )
 					}
 					//After Lenzi Aug2002
@@ -78,16 +86,7 @@ class Cargoservice ( name: String, scope: CoroutineScope, isconfined: Boolean=fa
 				}	 
 				state("moveRobot") { //this:State
 					action { //it:State
-						request("markContainer", "markContainer(Id)" ,"marker" )  
-						//genTimer( actor, state )
-					}
-					//After Lenzi Aug2002
-					sysaction { //it:State
-					}	 	 
-					 transition(edgeName="t03",targetState="finishMoveRobot",cond=whenReply("markDone"))
-				}	 
-				state("finishMoveRobot") { //this:State
-					action { //it:State
+						delay(3000) 
 						//genTimer( actor, state )
 					}
 					//After Lenzi Aug2002
