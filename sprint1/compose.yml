@@ -1,0 +1,19 @@
+services:
+  cargoservice:
+    build:
+      dockerfile: ./docker/Dockerfile.cargoservice
+    image: cargoservice:latest
+    container_name: cargoservice
+    restart: unless-stopped
+  
+  ioport:
+    build:
+      dockerfile: ./docker/Dockerfile.ioport
+    image: ioport:latest
+    container_name: ioport
+    ports:
+      - 8080:8080
+    depends_on:
+      - cargoservice
+    restart: unless-stopped
+    

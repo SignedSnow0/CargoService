@@ -151,13 +151,40 @@ task dovesiamo {
     println("buildDir  = $buildDir")    
 }
 
+tasks.register('createIOPortStartScripts', CreateStartScripts) {
+    mainClass.set('ioport.IOPortServer')
+    applicationName = 'ioport'
+    outputDir = layout.buildDirectory.dir("scripts").get().asFile
+    
+    // Gradle 8.6 compliant lazy classpath configuration
+    classpath = objects.fileCollection().from(
+        tasks.named('jar').flatMap { it.archiveFile },
+        configurations.runtimeClasspath
+    )
+}
+
 distributions {
     main {
         distributionBaseName = 'cargoservice'
-        contents { 
-             from './cargoservice.pl'
-             from './sysRules.pl'
-        } 
+        contents {
+            from('./cargoservice.pl')
+            from('./sysRules.pl')
+        }
+    }
+
+    ioport {
+        distributionBaseName = 'ioport'
+        contents {
+            into('bin') {
+                // Now Gradle knows what 'createIOPortStartScripts' is
+                from(tasks.named('createIOPortStartScripts'))
+                fileMode = 0755
+            }
+            into('lib') {
+                from(configurations.runtimeClasspath)
+                from(tasks.named('jar'))
+            }
+        }
     }
 }
 
@@ -192,4 +219,3 @@ tasks.register('runIoPort', JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
     mainClass = 'ioport.IOPortServer'
 }
-

@@ -63,7 +63,7 @@ public class IOPortServer {
             });
         });
 
-		cargoserviceConnection = ConnectionFactory.createClientSupport(ProtocolType.tcp, "localhost", "5000");
+		cargoserviceConnection = ConnectionFactory.createClientSupport(ProtocolType.tcp, "cargoservice", "5000");
 		System.out.println("Connected to cargoservice");
 	}
 	

@@ -1,0 +1,13 @@
+#FROM gradle:8.6-jdk17 AS build
+#WORKDIR /ioport
+#COPY ../unibolibs ./unibolibs
+#COPY --chown=gradle:gradle . .
+#RUN gradle distTar --no-daemon
+
+FROM eclipse-temurin:17-jre-alpine
+WORKDIR /ioport
+ADD ./build/distributions/ioport-1.0.tar /ioport
+WORKDIR /ioport/ioport-1.0
+
+EXPOSE 8080
+CMD ["./bin/ioport"]

@@ -164,5 +164,53 @@ socket.addEventListener("message", (event) => {
 ## Testing
 
 ## Deployment
+The system will be deployed on [docker](https://www.docker.com/), to keep the components separated different images will be built:
+* cargoservice
+* ioport
+
+This allows the possibility to deploy the various components on different nodes, giving flexibility on the client.
+The _cargoservice_ and _ioport_ will be essentially the same: they will take a _tar_ file of the application and run it on a _jvm_ image, exposing the required ports respectively.
+```Dockerfile
+FROM eclipse-temurin:17-jre-alpine
+WORKDIR /cargoservice
+ADD ./build/distributions/cargoservice-1.0.tar /cargoservice
+WORKDIR /cargoservice/cargoservice-1.0
+
+EXPOSE 5000
+CMD ["./bin/cargoservice"]
+```
+
+```Dockerfile
+FROM eclipse-temurin:17-jre-alpine
+WORKDIR /ioport
+ADD ./build/distributions/ioport-1.0.tar /ioport
+WORKDIR /ioport/ioport-1.0
+
+EXPOSE 8080
+CMD ["./bin/ioport"]
+```
+
+Lastly, to connect the two images in one cohesive system a compose file will be made, this file connects the two services internally via tcp on ports 5000/5001 on a private network, and exposes to the host only port 8080 which is needed for the web interface of the _ioport_.
+```yaml
+services:
+  cargoservice:
+    build:
+      dockerfile: ./docker/Dockerfile.cargoservice
+    image: cargoservice:latest
+    container_name: cargoservice
+  
+  ioport:
+    build:
+      dockerfile: ./docker/Dockerfile.ioport
+    image: ioport:latest
+    container_name: ioport
+    ports:
+      - 8080:8080
+    depends_on:
+      - cargoservice
+```
+If the client wishes to build and run the application, only two steps are required
+1. Build the tar files by running `gradle distTar` and `gradle ioportDistTar`
+2. Build and deploy the docker images by running `docker compose up --build`
 
 ## Maintenance
