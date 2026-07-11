@@ -1,7 +1,7 @@
 package model;
 
 public interface ISlot {
-    public int getID();
+    public int getId();
     public boolean isOccupied();
     public void setOccupied(boolean value);
 }
