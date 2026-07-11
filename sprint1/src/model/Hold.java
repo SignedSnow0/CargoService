@@ -39,7 +39,7 @@ public class Hold implements IHold {
 		ioPosition = new Position(0, width - 1);
 		homePosition = new Position(0, 0);
 		
-		slotList.add(new Pair<IPosition, ISlot>(new Position(width, delta), new Slot(1)));
+		slotList.add(new Pair<IPosition, ISlot>(new Position(delta, delta), new Slot(1)));
 		slotList.add(new Pair<IPosition, ISlot>(new Position(width - delta - 1, delta), new Slot(2)));
 		slotList.add(new Pair<IPosition, ISlot>(new Position(delta, length - delta - 1), new Slot(3)));
 		slotList.add(new Pair<IPosition, ISlot>(new Position(width - delta - 1, delta), new Slot(4)));
