@@ -1,27 +1,48 @@
 package model;
 
+import java.io.Reader;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import kotlin.Pair;
 
-public class Hold implements IHold {
-	private static final int LENGHT = 8;
-	private static final int WIDTH = 8;
-	private static final int DELTA = 2;
-	
+public class Hold implements IHold {		
 	private IPosition ioPosition;
 	private IPosition homePosition;
 	
 	private List<Pair<IPosition, ISlot>> slotList = new ArrayList<Pair<IPosition, ISlot>>();
 	
 	public Hold() {
-		ioPosition = new Position(0, WIDTH - 1);
+		BufferedReader rd = null;
+		System.out.println(System.getProperty("user.dir"));
+		try {
+			rd = new BufferedReader(new FileReader("src/model/values.txt"));
+		} catch (FileNotFoundException e) {
+			System.out.println("File read error!");
+			e.printStackTrace();
+		}
+		String values = null;
+		try {
+			values = rd.readLine();
+		} catch (IOException e) {
+			System.out.println("String read error!");
+			e.printStackTrace();
+		}
+		
+		int width = Integer.parseInt(values.split(";")[0]); 
+		int length = Integer.parseInt(values.split(";")[1]);
+		int delta = Integer.parseInt(values.split(";")[2]);
+		
+		ioPosition = new Position(0, width - 1);
 		homePosition = new Position(0, 0);
 		
-		slotList.add(new Pair<IPosition, ISlot>(new Position(WIDTH, DELTA), new Slot(1)));
-		slotList.add(new Pair<IPosition, ISlot>(new Position(WIDTH - DELTA - 1, DELTA), new Slot(2)));
-		slotList.add(new Pair<IPosition, ISlot>(new Position(DELTA, LENGHT - DELTA - 1), new Slot(3)));
-		slotList.add(new Pair<IPosition, ISlot>(new Position(WIDTH - DELTA - 1, DELTA), new Slot(4)));
+		slotList.add(new Pair<IPosition, ISlot>(new Position(delta, delta), new Slot(1)));
+		slotList.add(new Pair<IPosition, ISlot>(new Position(width - delta - 1, delta), new Slot(2)));
+		slotList.add(new Pair<IPosition, ISlot>(new Position(delta, length - delta - 1), new Slot(3)));
+		slotList.add(new Pair<IPosition, ISlot>(new Position(width - delta - 1, delta), new Slot(4)));
 	}
 
 	@Override
