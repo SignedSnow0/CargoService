@@ -1,8 +1,5 @@
 const socket = new WebSocket('ws://localhost:8080/');
 
-var seqNum = 0;
-
-
 const requestSpan = document.getElementById("request-result");
 const statusSpan = document.getElementById("current-status")
 
@@ -14,8 +11,7 @@ socket.addEventListener('open', (event) => {
 	button.addEventListener('click', () => {
         console.log('Request to load');
 		
-		const request = `msg(loadRequest, request, pushbutton, cargoservice, RequestToLoad, ${seqNum})`;
-		seqNum++;
+		const request = `msg(loadRequest, request, pushbutton, cargoservice, loadRequest(RequestToLoad), 1)`;
 		socket.send(request);
 	});
 });

@@ -27,5 +27,9 @@ with Diagram('cargoserviceArch', show=False, outformat='png', graph_attr=graphat
 ### see https://renenyffenegger.ch/notes/tools/Graphviz/attributes/label/HTML-like/index
      with Cluster('ctxcargoservice', graph_attr=nodeattr):
           cargoservice=Custom('cargoservice','./qakicons/symActorWithobjSmall.png')
-          sonar=Custom('sonar','./qakicons/symActorWithobjSmall.png')
+          sonarwrapper=Custom('sonarwrapper','./qakicons/symActorWithobjSmall.png')
+     sys >> Edge( label='iOPortDeposited', **evattr, decorate='true', fontcolor='darkgreen') >> cargoservice
+     sonarwrapper >> Edge( label='outOfService', **eventedgeattr, decorate='true', fontcolor='red') >> sys
+     sonarwrapper >> Edge( label='serviceWorking', **eventedgeattr, decorate='true', fontcolor='red') >> sys
+     sonarwrapper >> Edge( label='iOPortDeposited', **eventedgeattr, decorate='true', fontcolor='red') >> sys
 diag

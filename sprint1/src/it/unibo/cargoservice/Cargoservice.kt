@@ -92,10 +92,12 @@ class Cargoservice ( name: String, scope: CoroutineScope, isconfined: Boolean=fa
 				 	 					  scope, context!!, "local_tout_"+name+"_engaged", TimeoutMillis )  //OCT2023
 					}	 	 
 					 transition(edgeName="t01",targetState="disengaged",cond=whenTimeout("local_tout_"+name+"_engaged"))   
-					transition(edgeName="t02",targetState="moveRobot",cond=whenDispatch("iOPortDeposited"))
+					transition(edgeName="t02",targetState="moveRobot",cond=whenEvent("iOPortDeposited"))
 				}	 
 				state("moveRobot") { //this:State
 					action { //it:State
+						CommUtils.outgreen("$name | Move robot")
+						delay(10000) 
 						delay(3000) 
 						//genTimer( actor, state )
 					}

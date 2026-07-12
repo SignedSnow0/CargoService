@@ -9,10 +9,11 @@ request( markContainer, markContainer(ID) ).
 reply( markDone, markDone(msg) ).  %%for markContainer
 event( serviceWorking, serviceWorking(X) ).
 event( outOfService, outOfService(X) ).
-dispatch( iOPortDeposited, iOPortDeposited(X) ).
+event( iOPortDeposited, iOPortDeposited(X) ).
+dispatch( sonardata, sonardata(Distance) ).
 %====================================================================================
 context(ctxcargoservice, "localhost",  "TCP", "5000").
  qactor( cargoservice, ctxcargoservice, "it.unibo.cargoservice.Cargoservice").
  static(cargoservice).
-  qactor( sonar, ctxcargoservice, "it.unibo.sonar.Sonar").
- static(sonar).
+  qactor( sonarwrapper, ctxcargoservice, "it.unibo.sonarwrapper.Sonarwrapper").
+ static(sonarwrapper).

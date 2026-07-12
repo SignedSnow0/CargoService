@@ -13,7 +13,8 @@ Reply markDone : markDone(msg) for markContainer
 // Sonar events
 Event serviceWorking : serviceWorking(X)
 Event outOfService : outOfService(X)
-Dispatch iOPortDeposited : iOPortDeposited(X)
+Event iOPortDeposited : iOPortDeposited(X) //cannot be dispatch because it would be stored in the message queue
+Dispatch sonardata : sonardata(Distance)
 
 Context ctxcargoservice ip [ host="localhost" port=5000 ]
 //Context ctxioport ip [ host="localhost" port=5001 ]
@@ -71,11 +72,12 @@ QActor cargoservice context ctxcargoservice {
     }
     Transition t0
         whenTimeVar TimeoutMillis -> disengaged
-        whenMsg iOPortDeposited -> moveRobot
+        whenEvent iOPortDeposited -> moveRobot
 
     State moveRobot {
+    	println("$name | Move robot") color green
         // call robot service from IOPort to slot 5
-        
+        delay 10000
         delay 3000
         
     	// call robot service from slot 5 to slot ReservedSlot
@@ -85,8 +87,39 @@ QActor cargoservice context ctxcargoservice {
    Goto disengaged
 }
 
-QActor sonar context ctxcargoservice {
+QActor sonarwrapper context ctxcargoservice {
+	[#val DFREE = 30
+	  var isOutOfService = false#
+	]
     State s0 initial {
-        // listen to the sonar messages and send the right events/dispatch
-    }  
+        connectToMqttBroker  "tcp://mosquitto:1883"
+		subscribe "sonar/data"
+    }
+    Transition t0
+		whenMsg sonardata -> handleDistance
+
+	State handleDistance {
+		onMsg(sonardata : sonardata(Distance)) {
+			[#val distance = "${payloadArg(0)}".toDouble()#]
+			
+			if [#!isOutOfService && distance > DFREE#] {
+				[#isOutOfService = true#]
+				println("$name | Out of service") color blue
+				emit outOfService : outOfService(OutOfService)
+			}	
+			if [#isOutOfService && distance < DFREE#] {
+				[#isOutOfService = false#]
+				println("$name | Service working") color blue
+				emit serviceWorking : serviceWorking(ServiceWorking)
+			}
+			if [#distance < DFREE / 2#] {
+				println("$name | Container deposited") color blue
+				//forward cargoservice -m iOPortDeposited : iOPortDeposited(DepositedToIOPort)
+				emit iOPortDeposited : iOPortDeposited(DepositedToIOPort)
+			}
+		
+		}
+	}
+	Transition t0
+		whenMsg sonardata -> handleDistance
 }

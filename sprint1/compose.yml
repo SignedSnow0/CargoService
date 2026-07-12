@@ -1,10 +1,20 @@
 services:
+  mqtt:
+    image: eclipse-mosquitto:latest
+    container_name: mosquitto
+    ports:
+      - 1883:1883
+      - 9001:9001
+    restart: unless-stopped
+
   cargoservice:
     build:
       dockerfile: ./docker/Dockerfile.cargoservice
     image: cargoservice:latest
     container_name: cargoservice
     restart: unless-stopped
+    depends_on:
+      - mqtt
   
   ioport:
     build:
