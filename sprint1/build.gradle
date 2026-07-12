@@ -109,9 +109,18 @@ dependencies {
 sourceSets {
     main {
         java {
-            srcDir 'utils'
             srcDir 'src'
             exclude 'main/**'
+            exclude 'test/**'
+        }
+        resources {
+            srcDir 'resources'
+        }
+    }
+
+    test {
+        java {
+            srcDir 'src/test'
         }
     }
 }  

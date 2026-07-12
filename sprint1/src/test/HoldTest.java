@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import unibo.basicomm23.utils.CommUtils;
+import utils.*;
 import model.Hold;
 import model.IHold;
 
@@ -25,26 +26,9 @@ public class HoldTest {
 	public void setup() {
 		System.out.println("HoldTest | setup");	
 		hold = new Hold();
-		//lettura parametri da file esterno per maggiore modularità
-		BufferedReader rd = null;
-		System.out.println(System.getProperty("user.dir"));
-		
-		try {
-			rd = new BufferedReader(new FileReader("src/model/values.txt"));
-		} catch (FileNotFoundException e) {
-			System.out.println("File read error!");
-			e.printStackTrace();
-		}
-		String values = null;
-		try {
-			values = rd.readLine();
-		} catch (IOException e) {
-			System.out.println("String read error!");
-			e.printStackTrace();
-		}
-		
-		width = Integer.parseInt(values.split(";")[0]); 
-		length = Integer.parseInt(values.split(";")[1]);
+		//lettura parametri da file esterno .properties per maggiore modularità
+		width = Config.getInt("width"); 
+		length = Config.getInt("length");
 	}
 
 	@After
