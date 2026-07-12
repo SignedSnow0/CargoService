@@ -28,7 +28,7 @@ public class SlotTest {
 	
 	@Test
 	public void testGetId() {
-	    assertTrue(slot.getId() == ID);
+	    assertTrue(slot.getID() == ID);
 	}
 	
 	@Test

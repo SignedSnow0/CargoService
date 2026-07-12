@@ -25,6 +25,7 @@ public class HoldTest {
 	public void setup() {
 		System.out.println("HoldTest | setup");	
 		hold = new Hold();
+		//lettura parametri da file esterno per maggiore modularità
 		BufferedReader rd = null;
 		System.out.println(System.getProperty("user.dir"));
 		

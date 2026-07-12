@@ -1,6 +1,5 @@
 package model;
 
-import java.io.Reader;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -16,8 +15,8 @@ public class Hold implements IHold {
 	private List<Pair<IPosition, ISlot>> slotList = new ArrayList<Pair<IPosition, ISlot>>();
 	
 	public Hold() {
+		//lettura parametri da file esterno per maggiore modularità
 		BufferedReader rd = null;
-		System.out.println(System.getProperty("user.dir"));
 		try {
 			rd = new BufferedReader(new FileReader("src/model/values.txt"));
 		} catch (FileNotFoundException e) {
