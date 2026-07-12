@@ -10,7 +10,7 @@ public class Slot implements ISlot {
 	}
 
 	@Override
-	public int getId() {
+	public int getID() {
 		return this.id;
 	}
 
