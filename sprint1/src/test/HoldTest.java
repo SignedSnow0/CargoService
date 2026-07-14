@@ -53,7 +53,7 @@ public class HoldTest {
         assertTrue(hold.getSlots().get(0).component2().isOccupied());
         assertTrue(hold.getSlots().get(1).component2().isOccupied());
         assertTrue(hold.getSlots().get(2).component2().isOccupied());
-        assertTrue(hold.getSlots().get(3).component2().isOccupied());;
+        assertTrue(hold.getSlots().get(3).component2().isOccupied());
     }	
 	
 	@Test

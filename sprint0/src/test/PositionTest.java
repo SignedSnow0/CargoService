@@ -12,7 +12,7 @@ public class PositionTest {
 	public static final int Y = 5;
 	
 	@Test
-	public void testPosition() throws Exception {
+	public void testCoordinates() throws Exception {
 		int x = 0, y = 0;
 		IPosition pos = new Position(X, Y);
 		

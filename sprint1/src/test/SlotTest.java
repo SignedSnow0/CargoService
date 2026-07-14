@@ -4,6 +4,7 @@ import org.junit.Test;
 
 import model.ISlot;
 import model.Slot;
+import utils.Config;
 
 import static org.junit.Assert.assertTrue;
 
@@ -12,13 +13,14 @@ import org.junit.Before;
  
 
 public class SlotTest {
-	public static final int ID = 3;
+	private int id = 0;
 	private ISlot slot;
 
 	@Before
 	public void setup() {
-		System.out.println("SlotTest | setup");	
-		slot = new Slot(ID);
+		System.out.println("SlotTest | setup");
+		this.id = Config.getInt("id");
+		slot = new Slot(this.id);
 	}
 	
 	@After
@@ -28,7 +30,7 @@ public class SlotTest {
 	
 	@Test
 	public void testGetId() {
-	    assertTrue(slot.getID() == ID);
+	    assertTrue(slot.getID() == this.id);
 	}
 	
 	@Test
