@@ -155,32 +155,72 @@ The page will then need:
 
 ## Test Plans
 
-As the first order of business is it important to have the components from the model tested, such as the _hold_, in particular:
+As the first order of business is it important to have the components from the model [tested](https://github.com/SignedSnow0/CargoService/tree/main/sprint0/src/test), such as the _hold_, in particular:
 
 1. If the hold is empty a _request to load_ should give an _accepted_ response.
 2. If the hold is full a _request to load_ should give a _rejected_ response.
 
 ```java
 public class HoldTest {
+	private IHold hold = null; 
+	private static final int width = 8;
+	private static final int length = 8;
+
+	@Test
     public void TestEmptyHold() {
         var hold = new Hold();
-
-        assertFalse(hold.getSlots()[0].getValue().isOccupied());
-        assertFalse(hold.getSlots()[1].getValue().isOccupied());
-        assertFalse(hold.getSlots()[2].getValue().isOccupied());
-        assertFalse(hold.getSlots()[3].getValue().isOccupied());
+		assertFalse(hold.getSlots().get(0).component2().isOccupied());
+        assertFalse(hold.getSlots().get(1).component2().isOccupied());
+        assertFalse(hold.getSlots().get(2).component2().isOccupied());
+        assertFalse(hold.getSlots().get(3).component2().isOccupied());
     }
 
-    public void TestFullHold() {
+	@Test
+	public void TestFullHold() {
         var hold = new Hold();
-        for (int i = 0; i < 4; i++) {
-            hold.getSlots()[i].getValue().setOccupied(true);
+		for (int i = 0; i < 4; i++) {
+        	hold.getSlots().get(i).component2().setOccupied(true);
         }
 
-        assertTrue(hold.getSlots()[0].getValue().isOccupied());
-        assertTrue(hold.getSlots()[1].getValue().isOccupied());
-        assertTrue(hold.getSlots()[2].getValue().isOccupied());
-        assertTrue(hold.getSlots()[3].getValue().isOccupied());
+        assertTrue(hold.getSlots().get(0).component2().isOccupied());
+        assertTrue(hold.getSlots().get(1).component2().isOccupied());
+        assertTrue(hold.getSlots().get(2).component2().isOccupied());
+        assertTrue(hold.getSlots().get(3).component2().isOccupied());
+    }	
+	
+	@Test
+	public void TestSlotsCoordinates() {
+		var hold = new Hold();
+		int currentX = 0, currentY = 0;
+        
+		for (int i = 0; i < 4; i++) {
+        	currentX = hold.getSlots().get(i).component1().getX();
+            assertTrue(currentX < width);
+        	currentY = hold.getSlots().get(i).component1().getY();
+        	assertTrue(currentY < length);
+        }
+    }
+	
+	@Test
+	public void TestIOCoordinates() {
+		var hold = new Hold();
+		int currentX = 0, currentY = 0;
+        
+    	currentX = hold.getIOPortPosition().getX();
+        assertTrue(currentX < width);
+    	currentY = hold.getIOPortPosition().getY();
+    	assertTrue(currentY < length);
+    }
+	
+	@Test
+	public void TestHomeCoordinates() {
+		var hold = new Hold();
+		int currentX = 0, currentY = 0;
+
+    	currentX = hold.getIOPortPosition().getX();
+        assertTrue(currentX < width);
+    	currentY = hold.getIOPortPosition().getY();
+    	assertTrue(currentY < length);
     }
 }
 ```
