@@ -54,7 +54,6 @@ We begin by defining a _slot_, it must contain:
 public interface ISlot {
     public int getID();
     public boolean isOccupied();
-
     public void setOccupied(boolean value);
 }
 ```
@@ -79,7 +78,7 @@ We choose to make each cell the size of the robot, the position reprents the coo
 
 The special _slot5_ is distinguished by its ID which is always `5`.
 
-The _cargorobot_'s initial position is defined by the **HOME**, it is formalized as a special position in the hold obtained by `getHomePosition()`
+The _cargorobot_'s initial position is defined by the **HOME** position, which is formalized as a special position in the hold obtained by calling the method `getHomePosition()`.
 
 The current requirements do not specify any data about the _container_, the only information needed is to know if it currently occupied a slot, which can be obtained by the method `isOccupied()`, so the current system avoids modeling it.
 
@@ -156,7 +155,7 @@ The page will then need:
 
 ## Test Plans
 
-Since at the current status the system doesn't have much code, the only component that can be tested is the _hold_, in particular:
+As the first order of business is it important to have the components from the model tested, such as the _hold_, in particular:
 
 1. If the hold is empty a _request to load_ should give an _accepted_ response.
 2. If the hold is full a _request to load_ should give a _rejected_ response.
@@ -183,6 +182,47 @@ public class HoldTest {
         assertTrue(hold.getSlots()[2].getValue().isOccupied());
         assertTrue(hold.getSlots()[3].getValue().isOccupied());
     }
+}
+```
+
+_slot_ and _position_ do also have their basic methods tested:
+
+```java
+public class SlotTest {
+	public static final int ID = 3;
+	private ISlot slot;
+	
+	@Test
+	public void testGetId() {
+		slot = new Slot(ID);
+	    assertTrue(slot.getID() == ID);
+	}
+	
+	@Test
+	public void testIsSetOccupied() {
+	    slot = new Slot(ID);
+		slot.setOccupied(true);
+	    assertTrue(slot.isOccupied());
+	}
+}
+```
+
+```java
+public class PositionTest {
+	public static final int X = 4;
+	public static final int Y = 5;
+	
+	@Test
+	public void testPosition() throws Exception {
+		int x = 0, y = 0;
+		IPosition pos = new Position(X, Y);
+		
+		x = pos.getX();		
+		assertTrue(x == X);
+		
+		y = pos.getY();
+		assertTrue(y == Y);
+	}
 }
 ```
 
