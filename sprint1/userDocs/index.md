@@ -156,7 +156,7 @@ socket.addEventListener("message", (event) => {
 });
 ```
 ---
-Implementations (interfaces defined in the Sprint0) of the components from the model were also [produced](https://github.com/SignedSnow0/CargoService/tree/main/sprint1/src/model):
+Implementations of the components from the model (the interfaces were defined in the Sprint0) were also [produced](https://github.com/SignedSnow0/CargoService/tree/main/sprint1/src/model):
 
 ```java
 public class Hold implements IHold {		
@@ -241,7 +241,9 @@ public class Position implements IPosition {
 	}
 }
 ```
+
 Most of the relevant parameters are read from the external configuration file **model.properties** via the utily class [Config](https://github.com/SignedSnow0/CargoService/blob/main/sprint1/src/utils/Config.java).
+
 ---
 
 ## Test Plans
