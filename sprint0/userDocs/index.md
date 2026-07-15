@@ -155,7 +155,7 @@ The page will then need:
 
 ## Test Plans
 
-As the first order of business is it important to have the components from the model [tested](https://github.com/SignedSnow0/CargoService/tree/main/sprint0/src/test), such as the _hold_, in particular:
+Since at the current status the system doesn't have much code, the only component that can be tested is the _hold_, in particular:
 
 1. If the hold is empty a _request to load_ should give an _accepted_ response.
 2. If the hold is full a _request to load_ should give a _rejected_ response.
@@ -187,84 +187,6 @@ public class HoldTest {
         assertTrue(hold.getSlots().get(2).component2().isOccupied());
         assertTrue(hold.getSlots().get(3).component2().isOccupied());
     }	
-	
-	@Test
-	public void TestSlotsCoordinates() {
-		var hold = new Hold();
-		int currentX = 0, currentY = 0;
-        
-		for (int i = 0; i < 4; i++) {
-        	currentX = hold.getSlots().get(i).component1().getX();
-            assertTrue(currentX < width);
-        	currentY = hold.getSlots().get(i).component1().getY();
-        	assertTrue(currentY < length);
-        }
-    }
-	
-	@Test
-	public void TestIOCoordinates() {
-		var hold = new Hold();
-		int currentX = 0, currentY = 0;
-        
-    	currentX = hold.getIOPortPosition().getX();
-        assertTrue(currentX < width);
-    	currentY = hold.getIOPortPosition().getY();
-    	assertTrue(currentY < length);
-    }
-	
-	@Test
-	public void TestHomeCoordinates() {
-		var hold = new Hold();
-		int currentX = 0, currentY = 0;
-
-    	currentX = hold.getIOPortPosition().getX();
-        assertTrue(currentX < width);
-    	currentY = hold.getIOPortPosition().getY();
-    	assertTrue(currentY < length);
-    }
-}
-```
-
-_slot_ and _position_ do also have their basic methods tested:
-
-```java
-public class SlotTest {
-	public static final int ID = 3;
-	private ISlot slot;
-	
-	@Test
-	public void testGetId() {
-		slot = new Slot(ID);
-	    assertTrue(slot.getID() == ID);
-	}
-	
-	@Test
-	public void testIsSetOccupied() {
-	    slot = new Slot(ID);
-		slot.setOccupied(true);
-	    assertTrue(slot.isOccupied());
-	}
-}
-```
-
-```java
-public class PositionTest {
-	public static final int X = 4;
-	public static final int Y = 5;
-	
-	@Test
-	public void testCoordinates() throws Exception {
-		int x = 0, y = 0;
-		IPosition pos = new Position(X, Y);
-		
-		x = pos.getX();		
-		assertTrue(x == X);
-		
-		y = pos.getY();
-		assertTrue(y == Y);
-	}
-}
-```
 
 ## Project
 
