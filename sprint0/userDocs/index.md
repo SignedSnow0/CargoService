@@ -115,17 +115,19 @@ The system requires us to model the **cargorobot**, fortunately the software hou
 - [RobotSmart26](https://anatali.github.io/issLab2026/_static/docs/Protobook.pdf#chapter.30)
 
 From the requisites whe can deduce that the robot will:
+
 1. Go from _home_ to the _IOPort_
 2. Go from _IOPort_ to _slot5_
-3. Wait *3 seconds* for the _marker_ to finish (the client specified the wait time is fixed)
+3. Wait _3 seconds_ for the _marker_ to finish (the client specified the wait time is fixed)
 4. Go from _slot5_ to the reserved slot
 5. Go back _home_
 
 Fortunately the implementation **RobotSmart26** has a lot of features that the system need already built in, such as:
-* A pathfinding algorithm (not present in the others)
-* A map based on a grid
-* A movement system based on *steps* of fixed sizes (the cells of the grid)
-* It works as a service (not true for **RobotObj26**, which is a pojo) and it is interactable via _qak_ messages
+
+- A pathfinding algorithm (not present in the others)
+- A map based on a grid
+- A movement system based on _steps_ of fixed sizes (the cells of the grid)
+- It works as a service (not true for **RobotObj26**, which is a pojo) and it is interactable via _qak_ messages
 
 ---
 
@@ -151,18 +153,16 @@ The page will then need:
 
 ---
 
-## Problem Analysis
-
 ## Test Plans
 
-Since at the current status the system doesn't have much code, the only component that can be tested is the _hold_, in particular:
+The first component to be tested is the _hold_, in particular:
 
 1. If the hold is empty a _request to load_ should give an _accepted_ response.
 2. If the hold is full a _request to load_ should give a _rejected_ response.
 
 ```java
 public class HoldTest {
-	private IHold hold = null; 
+	private IHold hold = null;
 	private static final int width = 8;
 	private static final int length = 8;
 
@@ -186,12 +186,23 @@ public class HoldTest {
         assertTrue(hold.getSlots().get(1).component2().isOccupied());
         assertTrue(hold.getSlots().get(2).component2().isOccupied());
         assertTrue(hold.getSlots().get(3).component2().isOccupied());
-    }	
+    }
+```
 
-## Project
+We can also test the _request to load_, in particular:
+* The first request should return _accepted_
+* After all slots have been occupied we should get _rejected_
+```qak
+QActor ioportmock context ctxcargoservice {
+    State s0 initial {
+        request cargoservice -m loadRequest : loadRequest(X)
+    }
+    Transition t0
+        whenReply accepted -> s0
+        whenReply rejected -> error
 
-## Testing
-
-## Deployment
-
-## Maintenance
+    State error {
+        println("Test failed, expected accepted reply, got rejected")
+    }
+}
+```

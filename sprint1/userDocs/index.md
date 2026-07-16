@@ -11,9 +11,6 @@ This sprint builds on top of the work of [sprint 0](https://iss.signedsnow0.it/s
 * The *IOPort* and *pushbutton* interfaces
 * Concrete implementations of the following interfaces: *ISlot*, *IHold*, *IPosition* 
 
-## Requirements
-
-
 ## Requirement Analysis
 The requirement analysis has already been specified in the [sprint 0](https://iss.signedsnow0.it/sprint0/#requirement-analysis), this particular sprint does not require anything else to be specified in this section.
 
@@ -253,14 +250,19 @@ Most of the relevant parameters are read from the external configuration file **
 
 ## Test Plans
 
-## Project
+The tests for this sprint focus on the interaction of the various components that have been built. At this point we can test the flow an interaction with the user:
+* In the initial state, since no hold has been occupied, when the user makes a _request to load_, the system should reply with request accepted and the status of the page should reflect that. Also once the sonar detects a container the system should transition to the _engaged_ state and start to blink the _led_ on the Raspberry.
+* We can also test the edge cases that do not set the service to _engaged_, in particular, if the _ioport_ is occupied or all slots are occupied, the display should receive a _retry later_ and _rejected_ message respectively, also various log messages have been added to the system to trace the behaviour.
 
-## Testing
-Several tests regarding the POJOs from the model were [produced](https://github.com/SignedSnow0/CargoService/tree/main/sprint1/src/test). They can be run via gradle via the following command:
+Since these test do not simply run on a single component, unit tests are not feasible so end to end tests are required, the user can manually interact with the app and see the expected behaviour in the web gui and the physical led. 
+
+Several unit tests regarding the POJOs from the model were [produced](https://github.com/SignedSnow0/CargoService/tree/main/sprint1/src/test). They can be run via gradle via the following command:
 ```bash
 ./gradlew test
 ```
 The project's *build.gradle* [file](https://github.com/SignedSnow0/CargoService/blob/main/sprint1/build.gradle) had to be modified to add this functionality.
+
+---
 
 ## Deployment
 The system will be deployed on [docker](https://www.docker.com/), to keep the components separated different images will be built:
