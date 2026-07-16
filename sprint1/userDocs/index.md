@@ -313,5 +313,3 @@ services:
 If the client wishes to build and run the application, only two steps are required
 1. Build the tar files by running `gradle distTar` and `gradle ioportDistTar`
 2. Build and deploy the docker images by running `docker compose up --build`
-
-## Maintenance
