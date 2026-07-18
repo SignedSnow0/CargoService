@@ -11,6 +11,7 @@ event( serviceWorking, serviceWorking(X) ).
 event( outOfService, outOfService(X) ).
 event( iOPortDeposited, iOPortDeposited(X) ).
 dispatch( sonardata, sonardata(Distance) ).
+dispatch( blinkLed, blinkLed(Blink) ).
 %====================================================================================
 context(ctxcargoservice, "localhost",  "TCP", "5000").
  qactor( cargoservice, ctxcargoservice, "it.unibo.cargoservice.Cargoservice").

@@ -4,6 +4,7 @@ bin/default
 .classpath
 .project
 .idea
+.env
 build
 logs 
 
@@ -22,4 +23,3 @@ package-lock.json
 .lck/ 
 /.metadata/
 /src-gen/
-.env
