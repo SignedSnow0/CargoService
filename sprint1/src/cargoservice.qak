@@ -15,6 +15,7 @@ Event serviceWorking : serviceWorking(X)
 Event outOfService : outOfService(X)
 Event iOPortDeposited : iOPortDeposited(X) //cannot be dispatch because it would be stored in the message queue
 Dispatch sonardata : sonardata(Distance)
+Dispatch blinkLed : blinkLed(Blink)
 
 Context ctxcargoservice ip [ host="localhost" port=5000 ]
 //Context ctxioport ip [ host="localhost" port=5001 ]
@@ -34,6 +35,7 @@ QActor cargoservice context ctxcargoservice {
 	 	
     State disengaged initial {
     	[#IsEngaged = false#]
+    	forward sonarwrapper -m blinkLed : blinkLed(False)
     	
     	println("$name | Disengaged") color green
     }
@@ -67,8 +69,9 @@ QActor cargoservice context ctxcargoservice {
 	Goto engaged if [#IsEngaged#] else disengaged
 	
 	State engaged {
-        // call blink led service
         println("$name | Engaged") color green
+        
+        forward sonarwrapper -m blinkLed : blinkLed(True)
     }
     Transition t0
         whenTimeVar TimeoutMillis -> disengaged
@@ -77,12 +80,11 @@ QActor cargoservice context ctxcargoservice {
     State moveRobot {
     	println("$name | Move robot") color green
         // call robot service from IOPort to slot 5
+        
         delay 10000
         delay 3000
         
     	// call robot service from slot 5 to slot ReservedSlot
-
-        // stop blink led service
     }
    Goto disengaged
 }
@@ -110,11 +112,12 @@ QActor sonarwrapper context ctxcargoservice {
 			if [#isOutOfService && distance < DFREE#] {
 				[#isOutOfService = false#]
 				println("$name | Service working") color blue
+				
 				emit serviceWorking : serviceWorking(ServiceWorking)
 			}
 			if [#distance < DFREE / 2#] {
 				println("$name | Container deposited") color blue
-				//forward cargoservice -m iOPortDeposited : iOPortDeposited(DepositedToIOPort)
+
 				emit iOPortDeposited : iOPortDeposited(DepositedToIOPort)
 			}
 		
@@ -122,4 +125,17 @@ QActor sonarwrapper context ctxcargoservice {
 	}
 	Transition t0
 		whenMsg sonardata -> handleDistance
+		whenMsg blinkLed -> handleBlinkLed
+		
+	State handleBlinkLed {
+		println("$name | Forwarding blinkLed to sonar") color blue
+		onMsg(blinkLed : blinkLed(Status)) {
+			[# val msg = MsgUtil.buildDispatch(name, "blinkLed", "blinkLed(${payloadArg(0)})", "sonar")
+	 		   println("Sending " + msg.toString())
+	 		   mqtt.publish("sonar/led", msg.toString())#]
+		}
+	}
+	Transition t0
+		whenMsg sonardata -> handleDistance
+		whenMsg blinkLed -> handleBlinkLed
 }

@@ -32,4 +32,5 @@ with Diagram('cargoserviceArch', show=False, outformat='png', graph_attr=graphat
      sonarwrapper >> Edge( label='outOfService', **eventedgeattr, decorate='true', fontcolor='red') >> sys
      sonarwrapper >> Edge( label='serviceWorking', **eventedgeattr, decorate='true', fontcolor='red') >> sys
      sonarwrapper >> Edge( label='iOPortDeposited', **eventedgeattr, decorate='true', fontcolor='red') >> sys
+     cargoservice >> Edge(color='blue', style='solid',  decorate='true', label='<blinkLed &nbsp; >',  fontcolor='blue') >> sonarwrapper
 diag

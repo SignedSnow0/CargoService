@@ -9,6 +9,8 @@ led = Pin(46, Pin.OUT)
 TRIG = Pin("D2", Pin.OUT)
 ECHO = Pin("D3", Pin.IN)
 
+blink_led = False
+
 def parseEnv():
     envData = {}
     try:
@@ -96,25 +98,49 @@ def measureDistance():
     
     return (dt * 0.0343) / 2
 
+def on_message(topic, msg):
+    global blink_led
+    
+    msg_str = msg.decode()
+    if "blinkLed(True)" in msg_str: 
+        blink_led = True 
+        print("Blinking enabled")
+    elif "blinkLed(False)" in msg_str: 
+        blink_led = False 
+        print("Blinking disabled")
+
 env = parseEnv()
 
 wlan = connectWifi(env)
 client = connectMqtt(env)
+client.set_callback(on_message)
+
+led_topic = "sonar/led"
+client.subscribe(led_topic.encode())
 
 topic = env.get("MQTT_TOPIC", "sonar/data")
 
+index = 0
 while True:
     try:
-        distance = measureDistance()
-        
-        if distance >= 0:
-            payload = f"msg(sonardata, dispatch, sonar, sonarwrapper, sonardata({distance:.2f}), 1)"
-            print(f"Publishing: {payload} cm to topic '{topic}'")
-            client.publish(topic.encode(), payload.encode())
+        client.check_msg()
+        if blink_led:
+            led.value(not led.value())
         else:
-            print("Sensor error")
-            
-        time.sleep(3)
+            led.value(True) #True if off
+        
+        if index == 2:
+            distance = measureDistance()
+            if distance >= 0:
+                payload = f"msg(sonardata, dispatch, sonar, sonarwrapper, sonardata({distance:.2f}), 1)"
+                print(f"Publishing: {payload} cm to topic '{topic}'")
+                client.publish(topic.encode(), payload.encode())
+            else:
+                print("Sensor error")
+        
+        index = index + 1
+        index = index % 3
+        time.sleep(1)
         
     except OSError as e:
         print("Connection lost, attempting to reconnect...")
@@ -124,5 +150,6 @@ while True:
                 time.sleep(2)
                 
             client.connect()
+            client.subscribe(led_topic.encode())
         except Exception:
             time.sleep(2)

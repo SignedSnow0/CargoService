@@ -69,6 +69,24 @@ class Sonarwrapper ( name: String, scope: CoroutineScope, isconfined: Boolean=fa
 					sysaction { //it:State
 					}	 	 
 					 transition(edgeName="t04",targetState="handleDistance",cond=whenDispatch("sonardata"))
+					transition(edgeName="t05",targetState="handleBlinkLed",cond=whenDispatch("blinkLed"))
+				}	 
+				state("handleBlinkLed") { //this:State
+					action { //it:State
+						CommUtils.outblue("$name | Forwarding blinkLed to sonar")
+						if( checkMsgContent( Term.createTerm("blinkLed(Blink)"), Term.createTerm("blinkLed(Status)"), 
+						                        currentMsg.msgContent()) ) { //set msgArgList
+								 val msg = MsgUtil.buildDispatch(name, "blinkLed", "blinkLed(${payloadArg(0)})", "sonar")
+									 		   println("Sending " + msg.toString())
+									 		   mqtt.publish("sonar/led", msg.toString()) 
+						}
+						//genTimer( actor, state )
+					}
+					//After Lenzi Aug2002
+					sysaction { //it:State
+					}	 	 
+					 transition(edgeName="t06",targetState="handleDistance",cond=whenDispatch("sonardata"))
+					transition(edgeName="t07",targetState="handleBlinkLed",cond=whenDispatch("blinkLed"))
 				}	 
 			}
 		}
