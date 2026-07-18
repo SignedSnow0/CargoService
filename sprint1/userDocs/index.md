@@ -5,7 +5,7 @@ title: "Sprint 1"
 
 ## Introduction
 
-This sprint builds on top of the work of [sprint 0](https://iss.signedsnow0.it/sprint0/) and aims to build the core buisness of the system, in particular:
+This sprint builds on top of the work of [sprint 0](https://iss.signedsnow0.it/sprint0/) and aims to build several cardinal components of the system, in particular:
 * The main *cargoservice* actor
 * The *sonar* subsystem
 * The *IOPort* and *pushbutton* interfaces
@@ -71,7 +71,7 @@ The **sonar** is a [HC-SR04](https://www.handsontec.com/dataspecs/HC-SR04-Ultras
 - _qak_ supports a plethora of protocols, TCP, CoAP, MQTT, ecc..
 
 The software house has decided to use **MQTT** as the protocol of choice because:
-- It uses a centralized broker/client system, allowing the system to easily change or add devices in the future (multiple IOPorts or a device substituion), otherwise at least one of the nodes should know how to reach the other one, which is not always granted
+- It uses a centralized broker/client system (it follows the publish/subscribe model), allowing the system to easily change or add devices in the future (multiple IOPorts or a device substituion), otherwise at least one of the nodes should know how to reach the other one, which is not always granted
 - The broker is not particulary resource intensive and can easily be deployed along the rest of the service, likely in the same node as the main *cargoservice* actor
 - The topic system keeps messages from various nodes neatly separated
 
