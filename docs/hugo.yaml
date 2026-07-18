@@ -9,7 +9,8 @@ menu:
       url: "/sprint0"
     - name: "Sprint 1"
       url: "/sprint1"
-
+    - name: "Sprint 2"
+      url: "/sprint2"
 params:
   author:
     - "Marchini Claudio"
@@ -26,6 +27,9 @@ params:
 
       - name: "Sprint 1"
         url: "/sprint1"
+
+      - name: "Sprint 2"
+        url: "/sprint2"
 
   authors:
     - name: "Marchini Claudio"
@@ -48,3 +52,5 @@ module:
       target: "content/sprint0"
     - source: "../sprint1/userDocs"
       target: "content/sprint1"
+    - source: "../sprint2/userDocs"
+      target: "content/sprint2"

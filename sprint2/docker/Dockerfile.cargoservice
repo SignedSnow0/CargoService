@@ -1,0 +1,14 @@
+#FROM gradle:8.6-jdk17 AS build
+#WORKDIR /cargoservice
+#COPY ../unibolibs ./unibolibs
+#COPY --chown=gradle:gradle . .
+#RUN gradle distTar --no-daemon
+
+FROM eclipse-temurin:17-jre-alpine
+WORKDIR /cargoservice
+ADD ./build/distributions/cargoservice-1.0.tar /cargoservice
+WORKDIR /cargoservice/cargoservice-1.0
+
+EXPOSE 5000
+#EXPOSE 5001
+CMD ["./bin/cargoservice"]

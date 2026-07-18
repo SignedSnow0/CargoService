@@ -1,0 +1,25 @@
+bin
+bin/default
+.metadata
+.classpath
+.project
+.idea
+.env
+build
+logs 
+
+log4jInfo.log
+
+#node
+nodeCode/*/node_modules/
+*.lck
+package-lock.json
+
+# MQTT generated
+*-tcp*
+
+
+/ReadMe.html
+.lck/ 
+/.metadata/
+/src-gen/

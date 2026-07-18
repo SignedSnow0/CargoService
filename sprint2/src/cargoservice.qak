@@ -1,0 +1,141 @@
+System cargoservice
+
+// Container requests
+Request loadRequest : loadRequest(X)
+Reply retryLater : retryLater(RetryMessage) for loadRequest
+Reply rejected : rejected(RejectedMessage) for loadRequest
+Reply accepted : accepted(SlotID) for loadRequest
+
+// Container marking
+Request markContainer : markContainer(ID)
+Reply markDone : markDone(msg) for markContainer
+
+// Sonar events
+Event serviceWorking : serviceWorking(X)
+Event outOfService : outOfService(X)
+Event iOPortDeposited : iOPortDeposited(X) //cannot be dispatch because it would be stored in the message queue
+Dispatch sonardata : sonardata(Distance)
+Dispatch blinkLed : blinkLed(Blink)
+
+Context ctxcargoservice ip [ host="localhost" port=5000 ]
+//Context ctxioport ip [ host="localhost" port=5001 ]
+
+//ExternalQActor ioport context ctxioport
+
+QActor cargoservice context ctxcargoservice {
+	[#val TimeoutMillis = 30000L
+	  var IOPortOccupied = false
+	  var IsEngaged = false
+	  var hold = model.Hold()
+	  
+	  fun allSlotsOccupied(): Boolean {
+	      return hold.getSlots().all({ it.second.isOccupied() })
+	  }
+	  #]
+	 	
+    State disengaged initial {
+    	[#IsEngaged = false#]
+    	forward sonarwrapper -m blinkLed : blinkLed(False)
+    	
+    	println("$name | Disengaged") color green
+    }
+    Transition t0
+    	whenRequest loadRequest -> handleRequest
+
+	State handleRequest {
+		[#var canEngage = true#]
+		if [# IOPortOccupied #] {
+			println("$name | Reply retry later") color blue
+			replyTo loadRequest with retryLater : retryLater(IOPortOccupied)
+			[#canEngage = false#]
+		}
+		if [# allSlotsOccupied() #] {
+			println("$name | Reply rejected") color blue
+			replyTo loadRequest with rejected : rejected(AllSlotsFull)
+			[#canEngage = false#]
+		}
+		
+		if [#canEngage#] {
+			[#IsEngaged = true
+			
+			val freeSlot = hold.getSlots().first({ !it.second.isOccupied() }).second;
+			
+		  	freeSlot.setOccupied(true);
+		  	val SlotId = freeSlot.getID();#]
+		  	
+			replyTo loadRequest with accepted : accepted($SlotId)
+		}
+	}	
+	Goto engaged if [#IsEngaged#] else disengaged
+	
+	State engaged {
+        println("$name | Engaged") color green
+        
+        forward sonarwrapper -m blinkLed : blinkLed(True)
+    }
+    Transition t0
+        whenTimeVar TimeoutMillis -> disengaged
+        whenEvent iOPortDeposited -> moveRobot
+
+    State moveRobot {
+    	println("$name | Move robot") color green
+        // call robot service from IOPort to slot 5
+        
+        delay 10000
+        delay 3000
+        
+    	// call robot service from slot 5 to slot ReservedSlot
+    }
+   Goto disengaged
+}
+
+QActor sonarwrapper context ctxcargoservice {
+	[#val DFREE = 30
+	  var isOutOfService = false#
+	]
+    State s0 initial {
+        connectToMqttBroker  "tcp://mosquitto:1883"
+		subscribe "sonar/data"
+    }
+    Transition t0
+		whenMsg sonardata -> handleDistance
+
+	State handleDistance {
+		onMsg(sonardata : sonardata(Distance)) {
+			[#val distance = "${payloadArg(0)}".toDouble()#]
+			
+			if [#!isOutOfService && distance > DFREE#] {
+				[#isOutOfService = true#]
+				println("$name | Out of service") color blue
+				emit outOfService : outOfService(OutOfService)
+			}	
+			if [#isOutOfService && distance < DFREE#] {
+				[#isOutOfService = false#]
+				println("$name | Service working") color blue
+				
+				emit serviceWorking : serviceWorking(ServiceWorking)
+			}
+			if [#distance < DFREE / 2#] {
+				println("$name | Container deposited") color blue
+
+				emit iOPortDeposited : iOPortDeposited(DepositedToIOPort)
+			}
+		
+		}
+	}
+	Transition t0
+		whenMsg sonardata -> handleDistance
+		whenMsg blinkLed -> handleBlinkLed
+		
+	State handleBlinkLed {
+		println("$name | Forwarding blinkLed to sonar") color blue
+		onMsg(blinkLed : blinkLed(Status)) {
+			[# val msg = MsgUtil.buildDispatch(name, "blinkLed", "blinkLed(${payloadArg(0)})", "sonar")
+	 		   println("Sending " + msg.toString())
+	 		   mqtt.publish("sonar/led", msg.toString())#]
+		}
+	}
+	Transition t0
+		whenMsg sonardata -> handleDistance
+		whenMsg blinkLed -> handleBlinkLed
+}
