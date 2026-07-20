@@ -1,5 +1,4 @@
 System cargoservice
-
 // Container requests
 Request loadRequest : loadRequest(X)
 Reply retryLater : retryLater(RetryMessage) for loadRequest
@@ -17,23 +16,49 @@ Event iOPortDeposited : iOPortDeposited(X) //cannot be dispatch because it would
 Dispatch sonardata : sonardata(Distance)
 Dispatch blinkLed : blinkLed(Blink)
 
-Context ctxcargoservice ip [ host="localhost" port=5000 ]
-//Context ctxioport ip [ host="localhost" port=5001 ]
+/* 
+ * ------------------------------------------------
+ * Handled by robotsmart
+ * ------------------------------------------------
+*/
+Request moverobot : moverobot(TARGETX, TARGETY,STEPTIME)
+Reply moverobotdone  :  moverobotok(ARG) for moverobot
+Reply moverobotfailed:  moverobotfailed(PLANDONE, PLANTODO) for moverobot
 
-//ExternalQActor ioport context ctxioport
+Dispatch setplanbuildelay : value(V)
+ 
+Dispatch move : move(M) "MOVE = l|r|a|d|h mosse aril sincrone ok"
+Dispatch setrobotstate: setpos(X,Y,D) "set robot position to (X,Y) direction D=up|down|left|right" 
+
+Request setdirection : dir( D ) "set robot direction to D=up|down|left|right" 
+Reply setdirectiondone : pos(PX,PY) for setdirection
+
+Context ctxcargoservice ip [ host="localhost" port=5000 ]
+Context ctxrobotsmart ip [host="robotsmart26" port=8020] 
+
+ExternalQActor robotsmart context ctxrobotsmart
 
 QActor cargoservice context ctxcargoservice {
 	[#val TimeoutMillis = 30000L
 	  var IOPortOccupied = false
 	  var IsEngaged = false
 	  var hold = model.Hold()
+	  val StepTime = 345
+	  var lastOccupiedSlot = hold.getSlots().get(0)
 	  
 	  fun allSlotsOccupied(): Boolean {
 	      return hold.getSlots().all({ it.second.isOccupied() })
 	  }
 	  #]
-	 	
-    State disengaged initial {
+	
+	State s0 initial {
+		forward robotsmart -m setrobotstate : setpos(0, 0, down)
+		forward robotsmart -m setplanbuildelay : value(0)
+		delay 500
+	}
+	Goto disengaged
+	
+    State disengaged {
     	[#IsEngaged = false#]
     	forward sonarwrapper -m blinkLed : blinkLed(False)
     	
@@ -75,18 +100,57 @@ QActor cargoservice context ctxcargoservice {
     }
     Transition t0
         whenTimeVar TimeoutMillis -> disengaged
-        whenEvent iOPortDeposited -> moveRobot
-
-    State moveRobot {
-    	println("$name | Move robot") color green
-        // call robot service from IOPort to slot 5
+        whenEvent iOPortDeposited -> moveRobotHomeToIoPort
+   
+   	State moveRobotHomeToIoPort {
+   		request robotsmart -m moverobot : moverobot(4, 0, $StepTime)
         
-        delay 10000
-        delay 3000
-        
-    	// call robot service from slot 5 to slot ReservedSlot
-    }
-   Goto disengaged
+   		println("$name | Move robot to ioport") color green
+   	}
+   	Transition t0
+ 		whenReply moverobotdone -> moveRobotIoPortToSlot5
+ 		whenReply moverobotfailed -> handleRobotError
+   
+   	State moveRobotIoPortToSlot5 {
+   		println("$name | Move robot to slot 5") color green
+   		request robotsmart -m moverobot : moverobot(2, 5, $StepTime)
+   		
+   		delay 3000
+   	}
+   	Transition t0
+ 		whenReply moverobotdone -> markContainer
+ 		whenReply moverobotfailed -> handleRobotError
+ 		
+ 	State markContainer {
+ 		delay 3000
+ 	}
+ 	Goto moveRobotSlot5ToReservedSlot
+   
+   	State moveRobotSlot5ToReservedSlot {
+   		println("$name | Move robot to reserved slot") color green
+   		request robotsmart -m moverobot : moverobot(4, 2, $StepTime)
+   	}
+   	Transition t0
+ 		whenReply moverobotdone -> moveRobotReservedSlotToHome
+ 		whenReply moverobotfailed -> handleRobotError
+   
+   	State moveRobotReservedSlotToHome {
+   		println("$name | Move robot to home") color green
+   		request robotsmart -m moverobot : moverobot(0, 0, $StepTime)
+   	}
+	Transition t0
+		whenReply moverobotdone -> resetRobot
+		whenReply moverobotfailed -> handleRobotError
+		
+	State resetRobot {
+		request robotsmart -m setdirection : dir(Down)
+	}
+	Goto disengaged
+   
+   	State handleRobotError {
+   	
+   	}
+   	Goto disengaged
 }
 
 QActor sonarwrapper context ctxcargoservice {
@@ -94,7 +158,7 @@ QActor sonarwrapper context ctxcargoservice {
 	  var isOutOfService = false#
 	]
     State s0 initial {
-        connectToMqttBroker  "tcp://mosquitto:1883"
+    	connectToMqttBroker "tcp://mosquitto:1883"
 		subscribe "sonar/data"
     }
     Transition t0

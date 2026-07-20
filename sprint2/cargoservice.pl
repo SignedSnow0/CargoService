@@ -12,9 +12,19 @@ event( outOfService, outOfService(X) ).
 event( iOPortDeposited, iOPortDeposited(X) ).
 dispatch( sonardata, sonardata(Distance) ).
 dispatch( blinkLed, blinkLed(Blink) ).
+request( moverobot, moverobot(TARGETX,TARGETY,STEPTIME) ).
+reply( moverobotdone, moverobotok(ARG) ).  %%for moverobot
+reply( moverobotfailed, moverobotfailed(PLANDONE,PLANTODO) ).  %%for moverobot
+dispatch( setplanbuildelay, value(V) ).
+dispatch( move, move(M) ). %MOVE = l|r|a|d|h mosse aril sincrone ok
+dispatch( setrobotstate, setpos(X,Y,D) ). %set robot position to (X,Y) direction D=up|down|left|right
+request( setdirection, dir(D) ). %set robot direction to D=up|down|left|right
+reply( setdirectiondone, pos(PX,PY) ).  %%for setdirection
 %====================================================================================
 context(ctxcargoservice, "localhost",  "TCP", "5000").
- qactor( cargoservice, ctxcargoservice, "it.unibo.cargoservice.Cargoservice").
+context(ctxrobotsmart, "robotsmart26",  "TCP", "8020").
+ qactor( robotsmart, ctxrobotsmart, "external").
+  qactor( cargoservice, ctxcargoservice, "it.unibo.cargoservice.Cargoservice").
  static(cargoservice).
   qactor( sonarwrapper, ctxcargoservice, "it.unibo.sonarwrapper.Sonarwrapper").
  static(sonarwrapper).

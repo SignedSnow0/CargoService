@@ -163,7 +163,9 @@ task dovesiamo {
 tasks.register('createIOPortStartScripts', CreateStartScripts) {
     mainClass.set('ioport.IOPortServer')
     applicationName = 'ioport'
-    outputDir = layout.buildDirectory.dir("scripts").get().asFile
+    
+    // FIXED: Assigned the lazy directory providers directly so Gradle tracks the input/output boundaries properly
+    outputDir = layout.buildDirectory.dir("ioport-scripts").get().asFile
     
     // Gradle 8.6 compliant lazy classpath configuration
     classpath = objects.fileCollection().from(

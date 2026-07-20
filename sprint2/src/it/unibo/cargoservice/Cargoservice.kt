@@ -24,7 +24,7 @@ class Cargoservice ( name: String, scope: CoroutineScope, isconfined: Boolean=fa
           ActorBasicFsm( name, scope, confined=isconfined, dynamically=isdynamic ){
 
 	override fun getInitialState() : String{
-		return "disengaged"
+		return "s0"
 	}
 	override fun getBody() : (ActorBasicFsm.() -> Unit){
 		//val interruptedStateTransitions = mutableListOf<Transition>()
@@ -33,11 +33,25 @@ class Cargoservice ( name: String, scope: CoroutineScope, isconfined: Boolean=fa
 			  var IOPortOccupied = false
 			  var IsEngaged = false
 			  var hold = model.Hold()
+			  val StepTime = 345
+			  var lastOccupiedSlot = hold.getSlots().get(0)
 			  
 			  fun allSlotsOccupied(): Boolean {
 			      return hold.getSlots().all({ it.second.isOccupied() })
 			  }
 		return { //this:ActionBasciFsm
+				state("s0") { //this:State
+					action { //it:State
+						forward("setrobotstate", "setpos(0,0,down)" ,"robotsmart" ) 
+						forward("setplanbuildelay", "value(0)" ,"robotsmart" ) 
+						delay(500) 
+						//genTimer( actor, state )
+					}
+					//After Lenzi Aug2002
+					sysaction { //it:State
+					}	 	 
+					 transition( edgeName="goto",targetState="disengaged", cond=doswitch() )
+				}	 
 				state("disengaged") { //this:State
 					action { //it:State
 						IsEngaged = false 
@@ -94,13 +108,79 @@ class Cargoservice ( name: String, scope: CoroutineScope, isconfined: Boolean=fa
 				 	 					  scope, context!!, "local_tout_"+name+"_engaged", TimeoutMillis )  //OCT2023
 					}	 	 
 					 transition(edgeName="t01",targetState="disengaged",cond=whenTimeout("local_tout_"+name+"_engaged"))   
-					transition(edgeName="t02",targetState="moveRobot",cond=whenEvent("iOPortDeposited"))
+					transition(edgeName="t02",targetState="moveRobotHomeToIoPort",cond=whenEvent("iOPortDeposited"))
 				}	 
-				state("moveRobot") { //this:State
+				state("moveRobotHomeToIoPort") { //this:State
 					action { //it:State
-						CommUtils.outgreen("$name | Move robot")
-						delay(10000) 
+						request("moverobot", "moverobot(4,0,$StepTime)" ,"robotsmart" )  
+						CommUtils.outgreen("$name | Move robot to ioport")
+						//genTimer( actor, state )
+					}
+					//After Lenzi Aug2002
+					sysaction { //it:State
+					}	 	 
+					 transition(edgeName="t03",targetState="moveRobotIoPortToSlot5",cond=whenReply("moverobotdone"))
+					transition(edgeName="t04",targetState="handleRobotError",cond=whenReply("moverobotfailed"))
+				}	 
+				state("moveRobotIoPortToSlot5") { //this:State
+					action { //it:State
+						CommUtils.outgreen("$name | Move robot to slot 5")
+						request("moverobot", "moverobot(2,5,$StepTime)" ,"robotsmart" )  
 						delay(3000) 
+						//genTimer( actor, state )
+					}
+					//After Lenzi Aug2002
+					sysaction { //it:State
+					}	 	 
+					 transition(edgeName="t05",targetState="markContainer",cond=whenReply("moverobotdone"))
+					transition(edgeName="t06",targetState="handleRobotError",cond=whenReply("moverobotfailed"))
+				}	 
+				state("markContainer") { //this:State
+					action { //it:State
+						delay(3000) 
+						//genTimer( actor, state )
+					}
+					//After Lenzi Aug2002
+					sysaction { //it:State
+					}	 	 
+					 transition( edgeName="goto",targetState="moveRobotSlot5ToReservedSlot", cond=doswitch() )
+				}	 
+				state("moveRobotSlot5ToReservedSlot") { //this:State
+					action { //it:State
+						CommUtils.outgreen("$name | Move robot to reserved slot")
+						request("moverobot", "moverobot(4,2,$StepTime)" ,"robotsmart" )  
+						//genTimer( actor, state )
+					}
+					//After Lenzi Aug2002
+					sysaction { //it:State
+					}	 	 
+					 transition(edgeName="t07",targetState="moveRobotReservedSlotToHome",cond=whenReply("moverobotdone"))
+					transition(edgeName="t08",targetState="handleRobotError",cond=whenReply("moverobotfailed"))
+				}	 
+				state("moveRobotReservedSlotToHome") { //this:State
+					action { //it:State
+						CommUtils.outgreen("$name | Move robot to home")
+						request("moverobot", "moverobot(0,0,$StepTime)" ,"robotsmart" )  
+						//genTimer( actor, state )
+					}
+					//After Lenzi Aug2002
+					sysaction { //it:State
+					}	 	 
+					 transition(edgeName="t09",targetState="resetRobot",cond=whenReply("moverobotdone"))
+					transition(edgeName="t010",targetState="handleRobotError",cond=whenReply("moverobotfailed"))
+				}	 
+				state("resetRobot") { //this:State
+					action { //it:State
+						request("setdirection", "dir(Down)" ,"robotsmart" )  
+						//genTimer( actor, state )
+					}
+					//After Lenzi Aug2002
+					sysaction { //it:State
+					}	 	 
+					 transition( edgeName="goto",targetState="disengaged", cond=doswitch() )
+				}	 
+				state("handleRobotError") { //this:State
+					action { //it:State
 						//genTimer( actor, state )
 					}
 					//After Lenzi Aug2002

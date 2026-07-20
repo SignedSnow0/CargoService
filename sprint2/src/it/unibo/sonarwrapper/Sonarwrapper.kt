@@ -41,7 +41,7 @@ class Sonarwrapper ( name: String, scope: CoroutineScope, isconfined: Boolean=fa
 					//After Lenzi Aug2002
 					sysaction { //it:State
 					}	 	 
-					 transition(edgeName="t03",targetState="handleDistance",cond=whenDispatch("sonardata"))
+					 transition(edgeName="t011",targetState="handleDistance",cond=whenDispatch("sonardata"))
 				}	 
 				state("handleDistance") { //this:State
 					action { //it:State
@@ -68,8 +68,8 @@ class Sonarwrapper ( name: String, scope: CoroutineScope, isconfined: Boolean=fa
 					//After Lenzi Aug2002
 					sysaction { //it:State
 					}	 	 
-					 transition(edgeName="t04",targetState="handleDistance",cond=whenDispatch("sonardata"))
-					transition(edgeName="t05",targetState="handleBlinkLed",cond=whenDispatch("blinkLed"))
+					 transition(edgeName="t012",targetState="handleDistance",cond=whenDispatch("sonardata"))
+					transition(edgeName="t013",targetState="handleBlinkLed",cond=whenDispatch("blinkLed"))
 				}	 
 				state("handleBlinkLed") { //this:State
 					action { //it:State
@@ -85,8 +85,8 @@ class Sonarwrapper ( name: String, scope: CoroutineScope, isconfined: Boolean=fa
 					//After Lenzi Aug2002
 					sysaction { //it:State
 					}	 	 
-					 transition(edgeName="t06",targetState="handleDistance",cond=whenDispatch("sonardata"))
-					transition(edgeName="t07",targetState="handleBlinkLed",cond=whenDispatch("blinkLed"))
+					 transition(edgeName="t014",targetState="handleDistance",cond=whenDispatch("sonardata"))
+					transition(edgeName="t015",targetState="handleBlinkLed",cond=whenDispatch("blinkLed"))
 				}	 
 			}
 		}

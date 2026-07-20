@@ -26,4 +26,34 @@ services:
     depends_on:
       - cargoservice
     restart: unless-stopped
+
+  wenv:
+    container_name: wenv
+    image: docker.io/natbodocker/virtualrobotdisi26:1.0
+    ports:
+      - 8090:8090 
+      - 8091:8091/tcp
+      - 8091:8091/udp
+    restart: unless-stopped
+
+  robotoutgui25:
+    container_name: robotoutgui25
+    image: docker.io/natbodocker/robotoutgui25:1.0
+    ports:
+     - 8085:8085/tcp
+    restart: unless-stopped
+
+  robotsmart26:
+    container_name: robotsmart26
+    build:
+      dockerfile: ./docker/Dockerfile.robotsmart26
+    ports:
+      - "8020:8020/tcp"
+      - "8020:8020/udp"
+    environment:
+      - VIRTUAL_ENV=wenv
+      - MQTTBROKER=mosquitto
+    depends_on:
+      - wenv
+    restart: unless-stopped
     
