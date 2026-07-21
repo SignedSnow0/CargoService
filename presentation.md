@@ -13,7 +13,6 @@ and Cesare Tomasi
 
 --- 
 
-
 # Sprint 0: technical summary
 
 The goal of this sprint was to convert natural language requirements into a machine-readable representation.
