@@ -45,8 +45,7 @@ services:
 
   robotsmart26:
     container_name: robotsmart26
-    build:
-      dockerfile: ./docker/Dockerfile.robotsmart26
+    image: docker.io/natbodocker/robotsmart26:1.0
     ports:
       - "8020:8020/tcp"
       - "8020:8020/udp"

@@ -8,6 +8,7 @@ import utils.*;
 public class Hold implements IHold {		
 	private IPosition ioPosition;
 	private IPosition homePosition;
+	private IPosition slot5Position;
 	
 	private List<Pair<IPosition, ISlot>> slotList = new ArrayList<Pair<IPosition, ISlot>>();
 	
@@ -15,15 +16,14 @@ public class Hold implements IHold {
 		//lettura parametri da file esterno .properties per maggiore modularità
 		int width = Config.getInt("width"); 
 		int length = Config.getInt("length");
-		int delta = Config.getInt("delta");
 		
-		ioPosition = new Position(0, width - 1);
+		ioPosition = new Position(4, 0);
 		homePosition = new Position(0, 0);
-		
-		slotList.add(new Pair<IPosition, ISlot>(new Position(delta, delta), new Slot(1)));
-		slotList.add(new Pair<IPosition, ISlot>(new Position(width - delta - 1, delta), new Slot(2)));
-		slotList.add(new Pair<IPosition, ISlot>(new Position(delta, length - delta - 1), new Slot(3)));
-		slotList.add(new Pair<IPosition, ISlot>(new Position(width - delta - 1, delta), new Slot(4)));
+		slot5Position = new Position(2, 5);
+		slotList.add(new Pair<IPosition, ISlot>(new Position(1, 1), new Slot(1)));
+		slotList.add(new Pair<IPosition, ISlot>(new Position(1, 4), new Slot(2)));
+		slotList.add(new Pair<IPosition, ISlot>(new Position(3, 1), new Slot(3)));
+		slotList.add(new Pair<IPosition, ISlot>(new Position(3, 4), new Slot(4)));
 	}
 
 	@Override
@@ -34,6 +34,11 @@ public class Hold implements IHold {
 	@Override
 	public IPosition getHomePosition() {
 		return homePosition;
+	}
+	
+	@Override
+	public IPosition getSlot5Position() {
+		return slot5Position;
 	}
 
 	@Override

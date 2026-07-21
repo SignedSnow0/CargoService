@@ -33,6 +33,9 @@ Dispatch setrobotstate: setpos(X,Y,D) "set robot position to (X,Y) direction D=u
 Request setdirection : dir( D ) "set robot direction to D=up|down|left|right" 
 Reply setdirectiondone : pos(PX,PY) for setdirection
 
+Request tuneAtHome : tuneAtHome(X) "reposition in home X don't care"
+Reply tuneDone : tuneDone(X) for tuneAtHome
+
 Context ctxcargoservice ip [ host="localhost" port=5000 ]
 Context ctxrobotsmart ip [host="robotsmart26" port=8020] 
 
@@ -45,6 +48,8 @@ QActor cargoservice context ctxcargoservice {
 	  var hold = model.Hold()
 	  val StepTime = 345
 	  var lastOccupiedSlot = hold.getSlots().get(0)
+	  val slot5 = hold.getSlot5Position()
+	  var currentStep = 0
 	  
 	  fun allSlotsOccupied(): Boolean {
 	      return hold.getSlots().all({ it.second.isOccupied() })
@@ -59,7 +64,9 @@ QActor cargoservice context ctxcargoservice {
 	Goto disengaged
 	
     State disengaged {
-    	[#IsEngaged = false#]
+    	[#IsEngaged = false
+    	  currentStep = 0#
+    	]
     	forward sonarwrapper -m blinkLed : blinkLed(False)
     	
     	println("$name | Disengaged") color green
@@ -83,10 +90,11 @@ QActor cargoservice context ctxcargoservice {
 		if [#canEngage#] {
 			[#IsEngaged = true
 			
-			val freeSlot = hold.getSlots().first({ !it.second.isOccupied() }).second;
+			val freeSlot = hold.getSlots().first({ !it.second.isOccupied() })
 			
-		  	freeSlot.setOccupied(true);
-		  	val SlotId = freeSlot.getID();#]
+		  	freeSlot.second.setOccupied(true)
+		  	lastOccupiedSlot = freeSlot
+		  	val SlotId = freeSlot.second.getID();#]
 		  	
 			replyTo loadRequest with accepted : accepted($SlotId)
 		}
@@ -99,23 +107,28 @@ QActor cargoservice context ctxcargoservice {
         forward sonarwrapper -m blinkLed : blinkLed(True)
     }
     Transition t0
-        whenTimeVar TimeoutMillis -> disengaged
+        whenTimeVar TimeoutMillis -> disengaged 
         whenEvent iOPortDeposited -> moveRobotHomeToIoPort
    
    	State moveRobotHomeToIoPort {
-   		request robotsmart -m moverobot : moverobot(4, 0, $StepTime)
-        
-   		println("$name | Move robot to ioport") color green
+   		[#val X = hold.getIOPortPosition().getX()
+   		  val Y = hold.getIOPortPosition().getY()
+   		  currentStep = 1#]
+   		  
+   	    println("$name | Move robot to ioport") color green
+   		request robotsmart -m moverobot : moverobot($X, $Y, $StepTime)
    	}
    	Transition t0
  		whenReply moverobotdone -> moveRobotIoPortToSlot5
  		whenReply moverobotfailed -> handleRobotError
    
    	State moveRobotIoPortToSlot5 {
-   		println("$name | Move robot to slot 5") color green
-   		request robotsmart -m moverobot : moverobot(2, 5, $StepTime)
+   		[#val X = slot5.getX()
+   		  val Y = slot5.getY()
+   		  currentStep = 2#]
    		
-   		delay 3000
+   		println("$name | Move robot to slot 5") color green
+   		request robotsmart -m moverobot : moverobot($X, $Y, $StepTime)
    	}
    	Transition t0
  		whenReply moverobotdone -> markContainer
@@ -127,30 +140,38 @@ QActor cargoservice context ctxcargoservice {
  	Goto moveRobotSlot5ToReservedSlot
    
    	State moveRobotSlot5ToReservedSlot {
+   		[#val X = lastOccupiedSlot.first.getX()
+   		  val Y = lastOccupiedSlot.first.getY()
+   		  currentStep = 3#]
+   		
    		println("$name | Move robot to reserved slot") color green
-   		request robotsmart -m moverobot : moverobot(4, 2, $StepTime)
+   		request robotsmart -m moverobot : moverobot($X, $Y, $StepTime)
    	}
    	Transition t0
  		whenReply moverobotdone -> moveRobotReservedSlotToHome
  		whenReply moverobotfailed -> handleRobotError
    
    	State moveRobotReservedSlotToHome {
+   		[#val X = hold.getHomePosition().getX()
+   		  val Y = hold.getHomePosition().getY()
+   		  currentStep = 4#]
+   		
    		println("$name | Move robot to home") color green
-   		request robotsmart -m moverobot : moverobot(0, 0, $StepTime)
+   		request robotsmart -m moverobot : moverobot($X, $Y, $StepTime)
    	}
 	Transition t0
-		whenReply moverobotdone -> resetRobot
+		whenReply moverobotdone -> disengaged
 		whenReply moverobotfailed -> handleRobotError
-		
-	State resetRobot {
-		request robotsmart -m setdirection : dir(Down)
-	}
-	Goto disengaged
    
    	State handleRobotError {
-   	
+   		println("$name | Move robot failed, going to home") color red
+   		request robotsmart -m tuneAtHome : tuneAtHome(X)
    	}
-   	Goto disengaged
+   	Transition t0
+   		whenReply tuneDone and [#currentStep == 1#] -> moveRobotHomeToIoPort
+   		whenReply tuneDone and [#currentStep == 2#] -> moveRobotIoPortToSlot5
+   		whenReply tuneDone and [#currentStep == 3#] -> moveRobotSlot5ToReservedSlot 
+   		whenReply tuneDone -> disengaged
 }
 
 QActor sonarwrapper context ctxcargoservice {

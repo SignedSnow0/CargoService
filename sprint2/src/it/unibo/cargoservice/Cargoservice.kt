@@ -35,6 +35,8 @@ class Cargoservice ( name: String, scope: CoroutineScope, isconfined: Boolean=fa
 			  var hold = model.Hold()
 			  val StepTime = 345
 			  var lastOccupiedSlot = hold.getSlots().get(0)
+			  val slot5 = hold.getSlot5Position()
+			  var currentStep = 0
 			  
 			  fun allSlotsOccupied(): Boolean {
 			      return hold.getSlots().all({ it.second.isOccupied() })
@@ -54,7 +56,8 @@ class Cargoservice ( name: String, scope: CoroutineScope, isconfined: Boolean=fa
 				}	 
 				state("disengaged") { //this:State
 					action { //it:State
-						IsEngaged = false 
+						IsEngaged = false
+						    	  currentStep = 0 
 						forward("blinkLed", "blinkLed(False)" ,"sonarwrapper" ) 
 						CommUtils.outgreen("$name | Disengaged")
 						//genTimer( actor, state )
@@ -80,10 +83,11 @@ class Cargoservice ( name: String, scope: CoroutineScope, isconfined: Boolean=fa
 						if( canEngage 
 						 ){IsEngaged = true
 									
-									val freeSlot = hold.getSlots().first({ !it.second.isOccupied() }).second;
+									val freeSlot = hold.getSlots().first({ !it.second.isOccupied() })
 									
-								  	freeSlot.setOccupied(true);
-								  	val SlotId = freeSlot.getID(); 
+								  	freeSlot.second.setOccupied(true)
+								  	lastOccupiedSlot = freeSlot
+								  	val SlotId = freeSlot.second.getID(); 
 						answer("loadRequest", "accepted", "accepted($SlotId)"   )  
 						}
 						//genTimer( actor, state )
@@ -112,8 +116,11 @@ class Cargoservice ( name: String, scope: CoroutineScope, isconfined: Boolean=fa
 				}	 
 				state("moveRobotHomeToIoPort") { //this:State
 					action { //it:State
-						request("moverobot", "moverobot(4,0,$StepTime)" ,"robotsmart" )  
+						val X = hold.getIOPortPosition().getX()
+						   		  val Y = hold.getIOPortPosition().getY()
+						   		  currentStep = 1 
 						CommUtils.outgreen("$name | Move robot to ioport")
+						request("moverobot", "moverobot($X,$Y,$StepTime)" ,"robotsmart" )  
 						//genTimer( actor, state )
 					}
 					//After Lenzi Aug2002
@@ -124,9 +131,11 @@ class Cargoservice ( name: String, scope: CoroutineScope, isconfined: Boolean=fa
 				}	 
 				state("moveRobotIoPortToSlot5") { //this:State
 					action { //it:State
+						val X = slot5.getX()
+						   		  val Y = slot5.getY()
+						   		  currentStep = 2 
 						CommUtils.outgreen("$name | Move robot to slot 5")
-						request("moverobot", "moverobot(2,5,$StepTime)" ,"robotsmart" )  
-						delay(3000) 
+						request("moverobot", "moverobot($X,$Y,$StepTime)" ,"robotsmart" )  
 						//genTimer( actor, state )
 					}
 					//After Lenzi Aug2002
@@ -147,8 +156,11 @@ class Cargoservice ( name: String, scope: CoroutineScope, isconfined: Boolean=fa
 				}	 
 				state("moveRobotSlot5ToReservedSlot") { //this:State
 					action { //it:State
+						val X = lastOccupiedSlot.first.getX()
+						   		  val Y = lastOccupiedSlot.first.getY()
+						   		  currentStep = 3 
 						CommUtils.outgreen("$name | Move robot to reserved slot")
-						request("moverobot", "moverobot(4,2,$StepTime)" ,"robotsmart" )  
+						request("moverobot", "moverobot($X,$Y,$StepTime)" ,"robotsmart" )  
 						//genTimer( actor, state )
 					}
 					//After Lenzi Aug2002
@@ -159,34 +171,35 @@ class Cargoservice ( name: String, scope: CoroutineScope, isconfined: Boolean=fa
 				}	 
 				state("moveRobotReservedSlotToHome") { //this:State
 					action { //it:State
+						val X = hold.getHomePosition().getX()
+						   		  val Y = hold.getHomePosition().getY()
+						   		  currentStep = 4 
 						CommUtils.outgreen("$name | Move robot to home")
-						request("moverobot", "moverobot(0,0,$StepTime)" ,"robotsmart" )  
+						request("moverobot", "moverobot($X,$Y,$StepTime)" ,"robotsmart" )  
 						//genTimer( actor, state )
 					}
 					//After Lenzi Aug2002
 					sysaction { //it:State
 					}	 	 
-					 transition(edgeName="t09",targetState="resetRobot",cond=whenReply("moverobotdone"))
+					 transition(edgeName="t09",targetState="disengaged",cond=whenReply("moverobotdone"))
 					transition(edgeName="t010",targetState="handleRobotError",cond=whenReply("moverobotfailed"))
-				}	 
-				state("resetRobot") { //this:State
-					action { //it:State
-						request("setdirection", "dir(Down)" ,"robotsmart" )  
-						//genTimer( actor, state )
-					}
-					//After Lenzi Aug2002
-					sysaction { //it:State
-					}	 	 
-					 transition( edgeName="goto",targetState="disengaged", cond=doswitch() )
 				}	 
 				state("handleRobotError") { //this:State
 					action { //it:State
+						CommUtils.outred("$name | Move robot failed, going to home")
+						request("tuneAtHome", "tuneAtHome(X)" ,"robotsmart" )  
 						//genTimer( actor, state )
 					}
 					//After Lenzi Aug2002
 					sysaction { //it:State
 					}	 	 
-					 transition( edgeName="goto",targetState="disengaged", cond=doswitch() )
+					 transition(edgeName="t011",targetState="moveRobotHomeToIoPort",cond=whenReplyGuarded("tuneDone",{currentStep == 1 
+					}))
+					transition(edgeName="t012",targetState="moveRobotIoPortToSlot5",cond=whenReplyGuarded("tuneDone",{currentStep == 2 
+					}))
+					transition(edgeName="t013",targetState="moveRobotSlot5ToReservedSlot",cond=whenReplyGuarded("tuneDone",{currentStep == 3 
+					}))
+					transition(edgeName="t014",targetState="disengaged",cond=whenReply("tuneDone"))
 				}	 
 			}
 		}

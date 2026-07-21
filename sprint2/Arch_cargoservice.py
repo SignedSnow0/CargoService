@@ -34,7 +34,7 @@ with Diagram('cargoserviceArch', show=False, outformat='png', graph_attr=graphat
      sonarwrapper >> Edge( label='outOfService', **eventedgeattr, decorate='true', fontcolor='red') >> sys
      sonarwrapper >> Edge( label='serviceWorking', **eventedgeattr, decorate='true', fontcolor='red') >> sys
      sonarwrapper >> Edge( label='iOPortDeposited', **eventedgeattr, decorate='true', fontcolor='red') >> sys
-     cargoservice >> Edge(color='magenta', style='solid', decorate='true', label='<moverobot<font color="darkgreen"> moverobotdone moverobotfailed</font> &nbsp; setdirection<font color="darkgreen"> setdirectiondone</font> &nbsp; >',  fontcolor='magenta') >> robotsmart
+     cargoservice >> Edge(color='magenta', style='solid', decorate='true', label='<moverobot<font color="darkgreen"> moverobotdone moverobotfailed</font> &nbsp; tuneAtHome<font color="darkgreen"> tuneDone</font> &nbsp; >',  fontcolor='magenta') >> robotsmart
      cargoservice >> Edge(color='blue', style='solid',  decorate='true', label='<blinkLed &nbsp; >',  fontcolor='blue') >> sonarwrapper
      cargoservice >> Edge(color='blue', style='solid',  decorate='true', label='<setrobotstate &nbsp; setplanbuildelay &nbsp; >',  fontcolor='blue') >> robotsmart
 diag
