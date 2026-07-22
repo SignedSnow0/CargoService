@@ -28,9 +28,12 @@ with Diagram('cargoserviceArch', show=False, outformat='png', graph_attr=graphat
      with Cluster('ctxcargoservice', graph_attr=nodeattr):
           cargoservice=Custom('cargoservice','./qakicons/symActorWithobjSmall.png')
           sonarwrapper=Custom('sonarwrapper','./qakicons/symActorWithobjSmall.png')
+          ioportadapter=Custom('ioportadapter','./qakicons/symActorWithobjSmall.png')
      sys >> Edge( label='iOPortDeposited', **evattr, decorate='true', fontcolor='darkgreen') >> cargoservice
      sonarwrapper >> Edge( label='outOfService', **eventedgeattr, decorate='true', fontcolor='red') >> sys
      sonarwrapper >> Edge( label='serviceWorking', **eventedgeattr, decorate='true', fontcolor='red') >> sys
      sonarwrapper >> Edge( label='iOPortDeposited', **eventedgeattr, decorate='true', fontcolor='red') >> sys
+     sys >> Edge( label='outOfService', **evattr, decorate='true', fontcolor='darkgreen') >> ioportadapter
+     sys >> Edge( label='serviceWorking', **evattr, decorate='true', fontcolor='darkgreen') >> ioportadapter
      cargoservice >> Edge(color='blue', style='solid',  decorate='true', label='<blinkLed &nbsp; >',  fontcolor='blue') >> sonarwrapper
 diag

@@ -17,6 +17,12 @@ Event iOPortDeposited : iOPortDeposited(X) //cannot be dispatch because it would
 Dispatch sonardata : sonardata(Distance)
 Dispatch blinkLed : blinkLed(Blink)
 
+// IoPort adapter
+Request registerListener : register(X)
+Reply registered : registered(OK) for registerListener
+Dispatch outOfServiceMsg   : outOfService(X)
+Dispatch serviceWorkingMsg : serviceWorking(X)
+
 Context ctxcargoservice ip [ host="localhost" port=5000 ]
 //Context ctxioport ip [ host="localhost" port=5001 ]
 
@@ -138,4 +144,52 @@ QActor sonarwrapper context ctxcargoservice {
 	Transition t0
 		whenMsg sonardata -> handleDistance
 		whenMsg blinkLed -> handleBlinkLed
+}
+
+QActor ioportadapter context ctxcargoservice {
+	[# var listenerConn : unibo.basicomm23.interfaces.Interaction? = null #]
+	
+	State s0 initial {
+		println("$name | Started") color green
+	}
+	Transition t0 
+		whenRequest registerListener -> handleRegister
+
+	State handleRegister {
+		println("$name | TCP Event Listener registered successfully: $listenerConn") color blue
+		
+		[#listenerConn = currentMsg.conn#]
+		
+		replyTo registerListener with registered : registered(ok)
+	}
+	Transition t0 
+		whenRequest registerListener -> handleRegister
+		whenEvent outOfService -> handleOutOfService
+		whenEvent serviceWorking -> handleServiceWorking
+
+	State handleOutOfService {
+		println("$name | Handling out of service") color blue
+		
+		[#if (listenerConn != null) {
+		      val msg = unibo.basicomm23.msg.ApplMessage("msg(outOfServiceMsg, dispatch, $name, ioport, outOfService(OutOfService), 1)")
+		      listenerConn?.forward(msg)
+		  }#]
+	}
+	Transition t0 
+		whenRequest registerListener -> handleRegister
+		whenEvent outOfService -> handleOutOfService
+		whenEvent serviceWorking -> handleServiceWorking
+
+	State handleServiceWorking {
+		println("$name | Handling service working") color blue
+		
+		[#if (listenerConn != null) {
+		      val msg = unibo.basicomm23.msg.ApplMessage("msg(serviceWorkingMsg, dispatch, $name, ioport, serviceWorking(ServiceWorking), 1)")
+		      listenerConn?.forward(msg)
+		  }#]
+	}
+	Transition t0 
+		whenRequest registerListener -> handleRegister
+		whenEvent outOfService -> handleOutOfService
+		whenEvent serviceWorking -> handleServiceWorking
 }
