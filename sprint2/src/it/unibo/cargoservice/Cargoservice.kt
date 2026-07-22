@@ -57,7 +57,8 @@ class Cargoservice ( name: String, scope: CoroutineScope, isconfined: Boolean=fa
 				state("disengaged") { //this:State
 					action { //it:State
 						IsEngaged = false
-						    	  currentStep = 0 
+						    	  currentStep = 0
+						    	  retries = 0 
 						forward("blinkLed", "blinkLed(False)" ,"sonarwrapper" ) 
 						CommUtils.outgreen("$name | Disengaged")
 						//genTimer( actor, state )

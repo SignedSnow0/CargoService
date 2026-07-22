@@ -29,8 +29,7 @@ class Sonarwrapper ( name: String, scope: CoroutineScope, isconfined: Boolean=fa
 	override fun getBody() : (ActorBasicFsm.() -> Unit){
 		//val interruptedStateTransitions = mutableListOf<Transition>()
 		//IF actor.withobj !== null val actor.withobj.name� = actor.withobj.method�ENDIF
-		val DFREE = 30
-			  var isOutOfService = false 
+		val DFREE = 30 
 		return { //this:ActionBasciFsm
 				state("s0") { //this:State
 					action { //it:State
@@ -48,14 +47,12 @@ class Sonarwrapper ( name: String, scope: CoroutineScope, isconfined: Boolean=fa
 						if( checkMsgContent( Term.createTerm("sonardata(Distance)"), Term.createTerm("sonardata(Distance)"), 
 						                        currentMsg.msgContent()) ) { //set msgArgList
 								val distance = "${payloadArg(0)}".toDouble() 
-								if( !isOutOfService && distance > DFREE 
-								 ){isOutOfService = true 
-								CommUtils.outblue("$name | Out of service")
+								if( distance > DFREE 
+								 ){CommUtils.outblue("$name | Out of service")
 								emit("outOfService", "outOfService(OutOfService)" ) 
 								}
-								if( isOutOfService && distance < DFREE 
-								 ){isOutOfService = false 
-								CommUtils.outblue("$name | Service working")
+								if( distance <= DFREE 
+								 ){CommUtils.outblue("$name | Service working")
 								emit("serviceWorking", "serviceWorking(ServiceWorking)" ) 
 								}
 								if( distance < DFREE / 2 

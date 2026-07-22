@@ -16,6 +16,12 @@ Event iOPortDeposited : iOPortDeposited(X) //cannot be dispatch because it would
 Dispatch sonardata : sonardata(Distance)
 Dispatch blinkLed : blinkLed(Blink)
 
+// IoPort adapter
+Request registerListener : register(X)
+Reply registered : registered(OK) for registerListener
+Dispatch outOfServiceMsg   : outOfService(X)
+Dispatch serviceWorkingMsg : serviceWorking(X)
+
 /* 
  * ------------------------------------------------
  * Handled by robotsmart
@@ -27,13 +33,9 @@ Reply moverobotfailed:  moverobotfailed(PLANDONE, PLANTODO) for moverobot
 
 Dispatch setplanbuildelay : value(V)
  
-Dispatch move : move(M) "MOVE = l|r|a|d|h mosse aril sincrone ok"
-Dispatch setrobotstate: setpos(X,Y,D) "set robot position to (X,Y) direction D=up|down|left|right" 
+Dispatch setrobotstate: setpos(X,Y,D) 
 
-Request setdirection : dir( D ) "set robot direction to D=up|down|left|right" 
-Reply setdirectiondone : pos(PX,PY) for setdirection
-
-Request tuneAtHome : tuneAtHome(X) "reposition in home X don't care"
+Request tuneAtHome : tuneAtHome(X)
 Reply tuneDone : tuneDone(X) for tuneAtHome
 
 Context ctxcargoservice ip [ host="localhost" port=5000 ]
@@ -65,8 +67,8 @@ QActor cargoservice context ctxcargoservice {
 	
     State disengaged {
     	[#IsEngaged = false
-    	  currentStep = 0#
-    	]
+    	  currentStep = 0
+    	  retries = 0#]
     	forward sonarwrapper -m blinkLed : blinkLed(False)
     	
     	println("$name | Disengaged") color green
@@ -175,9 +177,8 @@ QActor cargoservice context ctxcargoservice {
 }
 
 QActor sonarwrapper context ctxcargoservice {
-	[#val DFREE = 30
-	  var isOutOfService = false#
-	]
+	[#val DFREE = 30#]
+	
     State s0 initial {
     	connectToMqttBroker "tcp://mosquitto:1883"
 		subscribe "sonar/data"
@@ -189,13 +190,12 @@ QActor sonarwrapper context ctxcargoservice {
 		onMsg(sonardata : sonardata(Distance)) {
 			[#val distance = "${payloadArg(0)}".toDouble()#]
 			
-			if [#!isOutOfService && distance > DFREE#] {
-				[#isOutOfService = true#]
+			if [#distance > DFREE#] {
 				println("$name | Out of service") color blue
+				
 				emit outOfService : outOfService(OutOfService)
 			}	
-			if [#isOutOfService && distance < DFREE#] {
-				[#isOutOfService = false#]
+			if [#distance <= DFREE#] {
 				println("$name | Service working") color blue
 				
 				emit serviceWorking : serviceWorking(ServiceWorking)
@@ -223,4 +223,52 @@ QActor sonarwrapper context ctxcargoservice {
 	Transition t0
 		whenMsg sonardata -> handleDistance
 		whenMsg blinkLed -> handleBlinkLed
+}
+
+QActor ioportadapter context ctxcargoservice {
+	[# var listenerConn : unibo.basicomm23.interfaces.Interaction? = null #]
+	
+	State s0 initial {
+		println("$name | Started") color green
+	}
+	Transition t0 
+		whenRequest registerListener -> handleRegister
+
+	State handleRegister {
+		println("$name | TCP Event Listener registered successfully: $listenerConn") color blue
+		
+		[#listenerConn = currentMsg.conn#]
+		
+		replyTo registerListener with registered : registered(ok)
+	}
+	Transition t0 
+		whenRequest registerListener -> handleRegister
+		whenEvent outOfService -> handleOutOfService
+		whenEvent serviceWorking -> handleServiceWorking
+
+	State handleOutOfService {
+		println("$name | Handling out of service") color blue
+		
+		[#if (listenerConn != null) {
+		      val msg = unibo.basicomm23.msg.ApplMessage("msg(outOfServiceMsg, dispatch, $name, ioport, outOfService(OutOfService), 1)")
+		      listenerConn?.forward(msg)
+		  }#]
+	}
+	Transition t0 
+		whenRequest registerListener -> handleRegister
+		whenEvent outOfService -> handleOutOfService
+		whenEvent serviceWorking -> handleServiceWorking
+
+	State handleServiceWorking {
+		println("$name | Handling service working") color blue
+		
+		[#if (listenerConn != null) {
+		      val msg = unibo.basicomm23.msg.ApplMessage("msg(serviceWorkingMsg, dispatch, $name, ioport, serviceWorking(ServiceWorking), 1)")
+		      listenerConn?.forward(msg)
+		  }#]
+	}
+	Transition t0 
+		whenRequest registerListener -> handleRegister
+		whenEvent outOfService -> handleOutOfService
+		whenEvent serviceWorking -> handleServiceWorking
 }

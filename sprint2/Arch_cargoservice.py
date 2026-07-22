@@ -28,12 +28,15 @@ with Diagram('cargoserviceArch', show=False, outformat='png', graph_attr=graphat
      with Cluster('ctxcargoservice', graph_attr=nodeattr):
           cargoservice=Custom('cargoservice','./qakicons/symActorWithobjSmall.png')
           sonarwrapper=Custom('sonarwrapper','./qakicons/symActorWithobjSmall.png')
+          ioportadapter=Custom('ioportadapter','./qakicons/symActorWithobjSmall.png')
      with Cluster('ctxrobotsmart', graph_attr=nodeattr):
           robotsmart=Custom('robotsmart(ext)','./qakicons/externalQActor.png')
      sys >> Edge( label='iOPortDeposited', **evattr, decorate='true', fontcolor='darkgreen') >> cargoservice
      sonarwrapper >> Edge( label='outOfService', **eventedgeattr, decorate='true', fontcolor='red') >> sys
      sonarwrapper >> Edge( label='serviceWorking', **eventedgeattr, decorate='true', fontcolor='red') >> sys
      sonarwrapper >> Edge( label='iOPortDeposited', **eventedgeattr, decorate='true', fontcolor='red') >> sys
+     sys >> Edge( label='outOfService', **evattr, decorate='true', fontcolor='darkgreen') >> ioportadapter
+     sys >> Edge( label='serviceWorking', **evattr, decorate='true', fontcolor='darkgreen') >> ioportadapter
      cargoservice >> Edge(color='magenta', style='solid', decorate='true', label='<moverobot<font color="darkgreen"> moverobotdone moverobotfailed</font> &nbsp; tuneAtHome<font color="darkgreen"> tuneDone</font> &nbsp; >',  fontcolor='magenta') >> robotsmart
      cargoservice >> Edge(color='blue', style='solid',  decorate='true', label='<blinkLed &nbsp; >',  fontcolor='blue') >> sonarwrapper
      cargoservice >> Edge(color='blue', style='solid',  decorate='true', label='<setrobotstate &nbsp; setplanbuildelay &nbsp; >',  fontcolor='blue') >> robotsmart
