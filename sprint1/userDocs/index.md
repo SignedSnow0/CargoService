@@ -67,7 +67,7 @@ QActor cargoservice context ctxcargoservice {
 The **sonar** is a [HC-SR04](https://www.handsontec.com/dataspecs/HC-SR04-Ultrasonic.pdf#[{%22num%22%3A21%2C%22gen%22%3A0}%2C{%22name%22%3A%22XYZ%22}%2C34%2C799%2C0]) and is connected to a _Raspberry Pi Pico W_, by nature the hardware has a few characteristics:
 
 - The raspberry is too lightweight to support a full JVM needed to run _qak_ directly, so we have to use either cpp or micropython as the language
-- Since _qak_ is not a possibility the comunication must be implemented with a protocol, preferably one that _qak_ suports out of the box
+- Since _qak_ is not a possibility the comunication must be implemented with a protocol, preferably one that _qak_ supports out of the box
 - _qak_ supports a plethora of protocols, TCP, CoAP, MQTT, ecc..
 
 The software house has decided to use **MQTT** as the protocol of choice because:
