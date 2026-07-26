@@ -51,8 +51,8 @@ style: |
 <!-- _class: lead -->
 # TF2026 presentation
 
-Made by Claudio Marchini
-and Cesare Tomasi
+Made by **Claudio Marchini**
+and **Cesare Tomasi**
 
 ---
 
@@ -145,6 +145,9 @@ This sprint was built on top of the work of **sprint 1** and aimed to integrate 
 
 ---
 
-# Final system architecture
+## Final system architecture
 
+<!-- _class: lead -->
+
+![w:950](./cargoservice_architecture.png)
 
