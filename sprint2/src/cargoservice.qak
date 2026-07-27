@@ -93,7 +93,6 @@ QActor cargoservice context ctxcargoservice {
 			
 			val freeSlot = hold.getSlots().first({ !it.second.isOccupied() })
 			
-		  	freeSlot.second.setOccupied(true)
 		  	lastOccupiedSlot = freeSlot
 		  	val SlotId = freeSlot.second.getID();#]
 		  	
@@ -115,6 +114,7 @@ QActor cargoservice context ctxcargoservice {
    	State moveRobotHomeToIoPort {
    		[#val X = hold.getIOPortPosition().getX()
    		  val Y = hold.getIOPortPosition().getY()
+   		  lastOccupiedSlot.second.setOccupied(true)
    		  currentStep = 1#]
    		  
    	    println("$name | Move robot to ioport") color green

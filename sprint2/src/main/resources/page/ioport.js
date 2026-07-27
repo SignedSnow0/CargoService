@@ -2,7 +2,8 @@ const socket = new WebSocket('ws://localhost:8080/')
 
 const requestSpan = document.getElementById("request-result")
 const statusSpan = document.getElementById("current-status")
-const statusLed = document.getElementById("status-led");
+const statusLed = document.getElementById("status-led")
+const requestButton = document.getElementById("request-button")
 
 // Connection opened
 socket.addEventListener('open', (event) => {
@@ -14,8 +15,8 @@ socket.addEventListener('open', (event) => {
 		
 		const request = `msg(loadRequest, request, pushbutton, cargoservice, loadRequest(RequestToLoad), 1)`
 		socket.send(request)
-	});
-});
+	})
+})
 
 // Listen for messages from the server
 socket.addEventListener('message', (event) => {
@@ -34,15 +35,18 @@ socket.addEventListener('message', (event) => {
 		requestSpan.textContent = `Retry later`
 	} else if (response.msgId == 'outOfServiceMsg') {
 		statusSpan.textContent = `out of service`
-		statusLed.className = "led out-of-service";
+		requestButton.disabled = true
+		statusLed.className = "led out-of-service"
 	} else if (response.msgId == 'serviceWorkingMsg') {
 		statusSpan.textContent = `service working`
-		statusLed.className = "led working";
+		requestButton.disabled = false
+		statusLed.className = "led working"
 	} else if (response.msgId == 'serviceBusyMsg') {
 		statusSpan.textContent = `service busy`
-		statusLed.className = "led busy";
+		requestButton.disabled = true
+		statusLed.className = "led busy"
 	}
-});
+})
 
 // Handle potential errors
 socket.addEventListener('error', (error) => {

@@ -56,6 +56,21 @@ h1 {
     transform: scale(0.98);
 }
 
+#request-button:disabled,
+#request-button.disabled {
+    background-color: #9ca3af;
+    color: #f3f4f6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    opacity: 0.7;
+}
+
+#request-button:disabled:hover,
+#request-button.disabled:hover {
+    background-color: #9ca3af;
+}
+
 /* --- Status & Monitor Section --- */
 .status-group {
     display: flex;

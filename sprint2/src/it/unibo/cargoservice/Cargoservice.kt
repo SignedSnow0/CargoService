@@ -86,7 +86,6 @@ class Cargoservice ( name: String, scope: CoroutineScope, isconfined: Boolean=fa
 									
 									val freeSlot = hold.getSlots().first({ !it.second.isOccupied() })
 									
-								  	freeSlot.second.setOccupied(true)
 								  	lastOccupiedSlot = freeSlot
 								  	val SlotId = freeSlot.second.getID(); 
 						answer("loadRequest", "accepted", "accepted($SlotId)"   )  
@@ -120,6 +119,7 @@ class Cargoservice ( name: String, scope: CoroutineScope, isconfined: Boolean=fa
 					action { //it:State
 						val X = hold.getIOPortPosition().getX()
 						   		  val Y = hold.getIOPortPosition().getY()
+						   		  lastOccupiedSlot.second.setOccupied(true)
 						   		  currentStep = 1 
 						CommUtils.outgreen("$name | Move robot to ioport")
 						request("moverobot", "moverobot($X,$Y,$StepTime)" ,"robotsmart" )  
