@@ -2,6 +2,7 @@ const socket = new WebSocket('ws://localhost:8080/')
 
 const requestSpan = document.getElementById("request-result")
 const statusSpan = document.getElementById("current-status")
+const statusLed = document.getElementById("status-led");
 
 // Connection opened
 socket.addEventListener('open', (event) => {
@@ -26,15 +27,20 @@ socket.addEventListener('message', (event) => {
 		const str = response.msgContent
 		const slotId = parseInt(str.slice(str.indexOf('(') + 1, str.indexOf(')')), 10)
 		
-		requestSpan.textContent = `request accepted at slot ${slotId}`
+		requestSpan.textContent = `Accepted at slot ${slotId}`
 	} else if (response.msgId === 'rejected') {
-		requestSpan.textContent = `request rejected`;
+		requestSpan.textContent = `Request rejected`;
 	} else if (response.msgId === 'retryLater') {
-		requestSpan.textContent = `retry later`
+		requestSpan.textContent = `Retry later`
 	} else if (response.msgId == 'outOfServiceMsg') {
 		statusSpan.textContent = `out of service`
+		statusLed.className = "led out-of-service";
 	} else if (response.msgId == 'serviceWorkingMsg') {
 		statusSpan.textContent = `service working`
+		statusLed.className = "led working";
+	} else if (response.msgId == 'serviceBusyMsg') {
+		statusSpan.textContent = `service busy`
+		statusLed.className = "led busy";
 	}
 });
 

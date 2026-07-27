@@ -54,6 +54,7 @@ class Ioportadapter ( name: String, scope: CoroutineScope, isconfined: Boolean=f
 					 transition(edgeName="t021",targetState="handleRegister",cond=whenRequest("registerListener"))
 					transition(edgeName="t022",targetState="handleOutOfService",cond=whenEvent("outOfService"))
 					transition(edgeName="t023",targetState="handleServiceWorking",cond=whenEvent("serviceWorking"))
+					transition(edgeName="t024",targetState="handleServiceBusy",cond=whenEvent("serviceBusy"))
 				}	 
 				state("handleOutOfService") { //this:State
 					action { //it:State
@@ -67,9 +68,10 @@ class Ioportadapter ( name: String, scope: CoroutineScope, isconfined: Boolean=f
 					//After Lenzi Aug2002
 					sysaction { //it:State
 					}	 	 
-					 transition(edgeName="t024",targetState="handleRegister",cond=whenRequest("registerListener"))
-					transition(edgeName="t025",targetState="handleOutOfService",cond=whenEvent("outOfService"))
-					transition(edgeName="t026",targetState="handleServiceWorking",cond=whenEvent("serviceWorking"))
+					 transition(edgeName="t025",targetState="handleRegister",cond=whenRequest("registerListener"))
+					transition(edgeName="t026",targetState="handleOutOfService",cond=whenEvent("outOfService"))
+					transition(edgeName="t027",targetState="handleServiceWorking",cond=whenEvent("serviceWorking"))
+					transition(edgeName="t028",targetState="handleServiceBusy",cond=whenEvent("serviceBusy"))
 				}	 
 				state("handleServiceWorking") { //this:State
 					action { //it:State
@@ -83,9 +85,27 @@ class Ioportadapter ( name: String, scope: CoroutineScope, isconfined: Boolean=f
 					//After Lenzi Aug2002
 					sysaction { //it:State
 					}	 	 
-					 transition(edgeName="t027",targetState="handleRegister",cond=whenRequest("registerListener"))
-					transition(edgeName="t028",targetState="handleOutOfService",cond=whenEvent("outOfService"))
-					transition(edgeName="t029",targetState="handleServiceWorking",cond=whenEvent("serviceWorking"))
+					 transition(edgeName="t029",targetState="handleRegister",cond=whenRequest("registerListener"))
+					transition(edgeName="t030",targetState="handleOutOfService",cond=whenEvent("outOfService"))
+					transition(edgeName="t031",targetState="handleServiceWorking",cond=whenEvent("serviceWorking"))
+					transition(edgeName="t032",targetState="handleServiceBusy",cond=whenEvent("serviceBusy"))
+				}	 
+				state("handleServiceBusy") { //this:State
+					action { //it:State
+						CommUtils.outblue("$name | Handling service busy")
+						if (listenerConn != null) {
+								      val msg = unibo.basicomm23.msg.ApplMessage("msg(serviceBusyMsg, dispatch, $name, ioport, serviceBusy(ServiceBusy), 1)")
+								      listenerConn?.forward(msg)
+								  } 
+						//genTimer( actor, state )
+					}
+					//After Lenzi Aug2002
+					sysaction { //it:State
+					}	 	 
+					 transition(edgeName="t033",targetState="handleRegister",cond=whenRequest("registerListener"))
+					transition(edgeName="t034",targetState="handleOutOfService",cond=whenEvent("outOfService"))
+					transition(edgeName="t035",targetState="handleServiceWorking",cond=whenEvent("serviceWorking"))
+					transition(edgeName="t036",targetState="handleServiceBusy",cond=whenEvent("serviceBusy"))
 				}	 
 			}
 		}

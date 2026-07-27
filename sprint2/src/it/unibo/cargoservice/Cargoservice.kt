@@ -57,9 +57,9 @@ class Cargoservice ( name: String, scope: CoroutineScope, isconfined: Boolean=fa
 				state("disengaged") { //this:State
 					action { //it:State
 						IsEngaged = false
-						    	  currentStep = 0
-						    	  retries = 0 
+						    	  currentStep = 0 
 						forward("blinkLed", "blinkLed(False)" ,"sonarwrapper" ) 
+						emit("serviceWorking", "serviceWorking(ServiceWorking)" ) 
 						CommUtils.outgreen("$name | Disengaged")
 						//genTimer( actor, state )
 					}
@@ -105,6 +105,7 @@ class Cargoservice ( name: String, scope: CoroutineScope, isconfined: Boolean=fa
 					action { //it:State
 						CommUtils.outgreen("$name | Engaged")
 						forward("blinkLed", "blinkLed(True)" ,"sonarwrapper" ) 
+						emit("serviceBusy", "serviceBusy(ServiceBusy)" ) 
 						//genTimer( actor, state )
 					}
 					//After Lenzi Aug2002

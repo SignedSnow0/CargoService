@@ -18,7 +18,7 @@ Dispatch iOPortDeposited : iOPortDeposited(X)
 Context ctxcargoservice ip [ host="localhost" port=5000 ]
 
 QActor cargoservice context ctxcargoservice {
-	[#val TimeoutMillis = 30000
+	[#val TimeoutMillis = 30000L
 	  var IOPortOccupied = false
 	  var NSlotsOccupied = 0
 	  var IsEngaged = false#]

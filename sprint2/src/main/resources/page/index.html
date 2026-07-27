@@ -4,11 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IOPort</title>
+    <link rel="stylesheet" href="style.css">
     <script src="ioport.js" defer></script>
 </head>
 <body>
-    <button id="request-button">Request to load</button><br>
-    Response: <span id="request-result"></span><br>
-    Current status: <span id="current-status">service working</span>
+    <div class="container">
+        <h1>IOPort Control Panel</h1>
+        
+        <button id="request-button">Request to load</button>
+        
+        <div class="status-group">
+            <div class="status-row">
+                <span class="status-label">Response:</span>
+                <span id="request-result">None</span>
+            </div>
+            <div class="status-row">
+                <span class="status-label">Current status:</span>
+                <div class="status-indicator-wrapper">
+                    <span id="status-led" class="led working"></span>
+                    <span id="current-status">service working</span>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

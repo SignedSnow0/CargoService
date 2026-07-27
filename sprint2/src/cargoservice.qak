@@ -19,8 +19,7 @@ Dispatch blinkLed : blinkLed(Blink)
 // IoPort adapter
 Request registerListener : register(X)
 Reply registered : registered(OK) for registerListener
-Dispatch outOfServiceMsg   : outOfService(X)
-Dispatch serviceWorkingMsg : serviceWorking(X)
+Event serviceBusy : serviceBusy(X)
 
 /* 
  * ------------------------------------------------
@@ -67,9 +66,9 @@ QActor cargoservice context ctxcargoservice {
 	
     State disengaged {
     	[#IsEngaged = false
-    	  currentStep = 0
-    	  retries = 0#]
+    	  currentStep = 0#]
     	forward sonarwrapper -m blinkLed : blinkLed(False)
+    	emit serviceWorking : serviceWorking(ServiceWorking)
     	
     	println("$name | Disengaged") color green
     }
@@ -107,6 +106,7 @@ QActor cargoservice context ctxcargoservice {
         println("$name | Engaged") color green
         
         forward sonarwrapper -m blinkLed : blinkLed(True)
+        emit serviceBusy : serviceBusy(ServiceBusy)
     }
     Transition t0
         whenTimeVar TimeoutMillis -> disengaged 
@@ -245,6 +245,7 @@ QActor ioportadapter context ctxcargoservice {
 		whenRequest registerListener -> handleRegister
 		whenEvent outOfService -> handleOutOfService
 		whenEvent serviceWorking -> handleServiceWorking
+		whenEvent serviceBusy -> handleServiceBusy
 
 	State handleOutOfService {
 		println("$name | Handling out of service") color blue
@@ -258,6 +259,7 @@ QActor ioportadapter context ctxcargoservice {
 		whenRequest registerListener -> handleRegister
 		whenEvent outOfService -> handleOutOfService
 		whenEvent serviceWorking -> handleServiceWorking
+		whenEvent serviceBusy -> handleServiceBusy
 
 	State handleServiceWorking {
 		println("$name | Handling service working") color blue
@@ -271,4 +273,19 @@ QActor ioportadapter context ctxcargoservice {
 		whenRequest registerListener -> handleRegister
 		whenEvent outOfService -> handleOutOfService
 		whenEvent serviceWorking -> handleServiceWorking
+		whenEvent serviceBusy -> handleServiceBusy
+
+	State handleServiceBusy {
+		println("$name | Handling service busy") color blue
+		
+		[#if (listenerConn != null) {
+		      val msg = unibo.basicomm23.msg.ApplMessage("msg(serviceBusyMsg, dispatch, $name, ioport, serviceBusy(ServiceBusy), 1)")
+		      listenerConn?.forward(msg)
+		  }#]
+	}
+	Transition t0 
+		whenRequest registerListener -> handleRegister
+		whenEvent outOfService -> handleOutOfService
+		whenEvent serviceWorking -> handleServiceWorking
+		whenEvent serviceBusy -> handleServiceBusy
 }

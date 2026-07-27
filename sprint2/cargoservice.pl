@@ -14,8 +14,7 @@ dispatch( sonardata, sonardata(Distance) ).
 dispatch( blinkLed, blinkLed(Blink) ).
 request( registerListener, register(X) ).
 reply( registered, registered(OK) ).  %%for registerListener
-dispatch( outOfServiceMsg, outOfService(X) ).
-dispatch( serviceWorkingMsg, serviceWorking(X) ).
+event( serviceBusy, serviceBusy(X) ).
 request( moverobot, moverobot(TARGETX,TARGETY,STEPTIME) ).
 reply( moverobotdone, moverobotok(ARG) ).  %%for moverobot
 reply( moverobotfailed, moverobotfailed(PLANDONE,PLANTODO) ).  %%for moverobot
