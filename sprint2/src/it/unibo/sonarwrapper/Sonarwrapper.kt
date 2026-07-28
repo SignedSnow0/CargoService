@@ -29,7 +29,8 @@ class Sonarwrapper ( name: String, scope: CoroutineScope, isconfined: Boolean=fa
 	override fun getBody() : (ActorBasicFsm.() -> Unit){
 		//val interruptedStateTransitions = mutableListOf<Transition>()
 		//IF actor.withobj !== null val actor.withobj.name� = actor.withobj.method�ENDIF
-		val DFREE = 30 
+		val DFREE = 30
+			  var serviceWorking = true 
 		return { //this:ActionBasciFsm
 				state("s0") { //this:State
 					action { //it:State
@@ -40,22 +41,24 @@ class Sonarwrapper ( name: String, scope: CoroutineScope, isconfined: Boolean=fa
 					//After Lenzi Aug2002
 					sysaction { //it:State
 					}	 	 
-					 transition(edgeName="t015",targetState="handleDistance",cond=whenDispatch("sonardata"))
+					 transition(edgeName="t017",targetState="handleDistance",cond=whenDispatch("sonardata"))
 				}	 
 				state("handleDistance") { //this:State
 					action { //it:State
 						if( checkMsgContent( Term.createTerm("sonardata(Distance)"), Term.createTerm("sonardata(Distance)"), 
 						                        currentMsg.msgContent()) ) { //set msgArgList
 								val distance = "${payloadArg(0)}".toDouble() 
-								if( distance > DFREE 
+								if( serviceWorking && distance > DFREE 
 								 ){CommUtils.outblue("$name | Out of service")
 								emit("outOfService", "outOfService(OutOfService)" ) 
+								serviceWorking = false 
 								}
-								if( distance <= DFREE 
+								if( !serviceWorking && distance <= DFREE 
 								 ){CommUtils.outblue("$name | Service working")
 								emit("serviceWorking", "serviceWorking(ServiceWorking)" ) 
+								serviceWorking = true 
 								}
-								if( distance < DFREE / 2 
+								if( serviceWorking && distance < DFREE / 2 
 								 ){CommUtils.outblue("$name | Container deposited")
 								emit("iOPortDeposited", "iOPortDeposited(DepositedToIOPort)" ) 
 								}
@@ -65,8 +68,8 @@ class Sonarwrapper ( name: String, scope: CoroutineScope, isconfined: Boolean=fa
 					//After Lenzi Aug2002
 					sysaction { //it:State
 					}	 	 
-					 transition(edgeName="t016",targetState="handleDistance",cond=whenDispatch("sonardata"))
-					transition(edgeName="t017",targetState="handleBlinkLed",cond=whenDispatch("blinkLed"))
+					 transition(edgeName="t018",targetState="handleDistance",cond=whenDispatch("sonardata"))
+					transition(edgeName="t019",targetState="handleBlinkLed",cond=whenDispatch("blinkLed"))
 				}	 
 				state("handleBlinkLed") { //this:State
 					action { //it:State
@@ -82,8 +85,8 @@ class Sonarwrapper ( name: String, scope: CoroutineScope, isconfined: Boolean=fa
 					//After Lenzi Aug2002
 					sysaction { //it:State
 					}	 	 
-					 transition(edgeName="t018",targetState="handleDistance",cond=whenDispatch("sonardata"))
-					transition(edgeName="t019",targetState="handleBlinkLed",cond=whenDispatch("blinkLed"))
+					 transition(edgeName="t020",targetState="handleDistance",cond=whenDispatch("sonardata"))
+					transition(edgeName="t021",targetState="handleBlinkLed",cond=whenDispatch("blinkLed"))
 				}	 
 			}
 		}

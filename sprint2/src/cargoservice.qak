@@ -51,6 +51,8 @@ QActor cargoservice context ctxcargoservice {
 	  var lastOccupiedSlot = hold.getSlots().get(0)
 	  val slot5 = hold.getSlot5Position()
 	  var currentStep = 0
+	  var currentTries = 0
+	  
 	  
 	  fun allSlotsOccupied(): Boolean {
 	      return hold.getSlots().all({ it.second.isOccupied() })
@@ -66,7 +68,8 @@ QActor cargoservice context ctxcargoservice {
 	
     State disengaged {
     	[#IsEngaged = false
-    	  currentStep = 0#]
+    	  currentStep = 0
+    	  currentTries = 0#]
     	forward sonarwrapper -m blinkLed : blinkLed(False)
     	emit serviceWorking : serviceWorking(ServiceWorking)
     	
@@ -167,17 +170,29 @@ QActor cargoservice context ctxcargoservice {
    
    	State handleRobotError {
    		println("$name | Move robot failed, going to home") color red
-   		request robotsmart -m tuneAtHome : tuneAtHome(X)
+   		[#currentTries = currentTries + 1#]
+   		if [#currentTries <= 5#] {
+   			request robotsmart -m tuneAtHome : tuneAtHome(X)	
+   		} else {
+   			println("$name | Robot failed 5 times in a row, aborting") color red
+   			
+   			[#val X = hold.getHomePosition().getX()
+   		      val Y = hold.getHomePosition().getY()#]
+   			request robotsmart -m moverobot : moverobot($X, $Y, $StepTime)	
+   		}
    	}
    	Transition t0
    		whenReply tuneDone and [#currentStep == 1#] -> moveRobotHomeToIoPort
    		whenReply tuneDone and [#currentStep == 2#] -> moveRobotIoPortToSlot5
    		whenReply tuneDone and [#currentStep == 3#] -> moveRobotSlot5ToReservedSlot 
    		whenReply tuneDone -> disengaged
+   		whenReply moverobotdone -> disengaged
+   		whenReply moverobotfailed -> disengaged
 }
 
 QActor sonarwrapper context ctxcargoservice {
-	[#val DFREE = 30#]
+	[#val DFREE = 30
+	  var serviceWorking = true#]
 	
     State s0 initial {
     	connectToMqttBroker "tcp://mosquitto:1883"
@@ -190,17 +205,19 @@ QActor sonarwrapper context ctxcargoservice {
 		onMsg(sonardata : sonardata(Distance)) {
 			[#val distance = "${payloadArg(0)}".toDouble()#]
 			
-			if [#distance > DFREE#] {
+			if [#serviceWorking && distance > DFREE#] {
 				println("$name | Out of service") color blue
 				
 				emit outOfService : outOfService(OutOfService)
+				[#serviceWorking = false#]
 			}	
-			if [#distance <= DFREE#] {
+			if [#!serviceWorking && distance <= DFREE#] {
 				println("$name | Service working") color blue
 				
 				emit serviceWorking : serviceWorking(ServiceWorking)
+				[#serviceWorking = true#]
 			}
-			if [#distance < DFREE / 2#] {
+			if [#serviceWorking && distance < DFREE / 2#] {
 				println("$name | Container deposited") color blue
 
 				emit iOPortDeposited : iOPortDeposited(DepositedToIOPort)

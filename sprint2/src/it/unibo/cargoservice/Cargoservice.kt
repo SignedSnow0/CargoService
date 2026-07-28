@@ -37,6 +37,8 @@ class Cargoservice ( name: String, scope: CoroutineScope, isconfined: Boolean=fa
 			  var lastOccupiedSlot = hold.getSlots().get(0)
 			  val slot5 = hold.getSlot5Position()
 			  var currentStep = 0
+			  var currentTries = 0
+			  
 			  
 			  fun allSlotsOccupied(): Boolean {
 			      return hold.getSlots().all({ it.second.isOccupied() })
@@ -57,7 +59,8 @@ class Cargoservice ( name: String, scope: CoroutineScope, isconfined: Boolean=fa
 				state("disengaged") { //this:State
 					action { //it:State
 						IsEngaged = false
-						    	  currentStep = 0 
+						    	  currentStep = 0
+						    	  currentTries = 0 
 						forward("blinkLed", "blinkLed(False)" ,"sonarwrapper" ) 
 						emit("serviceWorking", "serviceWorking(ServiceWorking)" ) 
 						CommUtils.outgreen("$name | Disengaged")
@@ -189,7 +192,16 @@ class Cargoservice ( name: String, scope: CoroutineScope, isconfined: Boolean=fa
 				state("handleRobotError") { //this:State
 					action { //it:State
 						CommUtils.outred("$name | Move robot failed, going to home")
-						request("tuneAtHome", "tuneAtHome(X)" ,"robotsmart" )  
+						currentTries = currentTries + 1 
+						if( currentTries <= 5 
+						 ){request("tuneAtHome", "tuneAtHome(X)" ,"robotsmart" )  
+						}
+						else
+						 {CommUtils.outred("$name | Robot failed 5 times in a row, aborting")
+						 val X = hold.getHomePosition().getX()
+						    		      val Y = hold.getHomePosition().getY() 
+						 request("moverobot", "moverobot($X,$Y,$StepTime)" ,"robotsmart" )  
+						 }
 						//genTimer( actor, state )
 					}
 					//After Lenzi Aug2002
@@ -202,6 +214,8 @@ class Cargoservice ( name: String, scope: CoroutineScope, isconfined: Boolean=fa
 					transition(edgeName="t013",targetState="moveRobotSlot5ToReservedSlot",cond=whenReplyGuarded("tuneDone",{currentStep == 3 
 					}))
 					transition(edgeName="t014",targetState="disengaged",cond=whenReply("tuneDone"))
+					transition(edgeName="t015",targetState="disengaged",cond=whenReply("moverobotdone"))
+					transition(edgeName="t016",targetState="disengaged",cond=whenReply("moverobotfailed"))
 				}	 
 			}
 		}
